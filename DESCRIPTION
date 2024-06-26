@@ -1,0 +1,18 @@
+Package: twrscripts
+Type: Package
+Title: R Scripts for Tiddlywiki
+Version: 0.1.0
+Author: Bangyou Zheng
+Maintainer: Bangyou Zheng <Bangyou.Zheng@csiro.au>
+Description: 'TiddlyWiki' is a unique non-linear notebook for capturing, organising 
+                 and sharing complex information. 'twrsripts' is a R scripts of 'TiddlyWiki' 
+                 <https://tiddlywiki.com> to manage tiddlers, e.g. reference.
+License: MIT + file LICENSE
+URL: https://twrscripts.bangyou.me/,
+    https://github.com/byzheng/twrscripts
+BugReports: https://github.com/byzheng/twrscripts/issues
+Encoding: UTF-8
+LazyData: true
+Imports:
+   settings
+RoxygenNote: 7.3.1
