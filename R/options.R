@@ -7,7 +7,10 @@
 # Variable, global to package's namespace.
 # This function is not exported to user space and does not need to be documented.
 TWS_OPTIONS <- settings::options_manager(
-    host = "http://127.0.0.1:8080/"
+    host = "http://127.0.0.1:8080/",
+    output = "output",
+    file_expired = 90,
+    file_remove_max = 3
 )
 
 
@@ -18,6 +21,9 @@ TWS_OPTIONS <- settings::options_manager(
 #' @section Supported options:
 #' The following options are supported
 #'  host: host of tiddlywiki
+#'  output: output for intermediate files
+#'  file_expired: days to intermediate files expired
+#'  file_remove_max: maximum number of intermediate file to remove
 #'
 #' @return the default and modified options.
 #' @export

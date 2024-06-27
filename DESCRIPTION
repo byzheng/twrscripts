@@ -13,6 +13,16 @@ URL: https://twrscripts.bangyou.me/,
 BugReports: https://github.com/byzheng/twrscripts/issues
 Encoding: UTF-8
 LazyData: true
+  Depends:
+    R (>= 4.2.0)
 Imports:
-   settings
+   settings,
+   purrr,
+   tibble,
+   dplyr,
+   rlang,
+   rscopus,
+   rtiddlywiki
+Remotes:
+    byzheng/rtiddlywiki
 RoxygenNote: 7.3.1
