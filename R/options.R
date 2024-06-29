@@ -9,6 +9,7 @@
 TWS_OPTIONS <- settings::options_manager(
     host = "http://127.0.0.1:8080/",
     output = "output",
+    author_max = 10,
     file_expired = 90,
     file_remove_max = 3
 )

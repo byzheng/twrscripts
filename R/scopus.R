@@ -43,9 +43,10 @@ works_scopus <- function(is_new = FALSE) {
         remove_outfiles(files = files)
     }
 
+    request_num <- min(tws_options()$author_max, nrow(scopus_ids))
     all_works <- list()
     i <- 1
-    for (i in seq(along = scopus_ids[[1]])) {
+    for (i in seq_len(request_num)) {
         out_file <- file.path(out_folder, paste0(scopus_ids$scopus[i], ".Rds"))
         if (file.exists(out_file)) {
             works <- readRDS(out_file) |>

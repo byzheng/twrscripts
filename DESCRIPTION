@@ -24,5 +24,6 @@ Imports:
    rscopus,
    rtiddlywiki
 Remotes:
-    byzheng/rtiddlywiki
+    byzheng/rtiddlywiki,
+    muschellij2/rscopus
 RoxygenNote: 7.3.1
