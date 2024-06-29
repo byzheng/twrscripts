@@ -59,3 +59,7 @@ R package [rscopus](https://github.com/muschellij2/rscopus) is used to retrieve 
 In the tiddlers with tag `Colleague`, field `orcid` is used as author profile in [ORCID](https://orcid.org/). 
 
 R package [rorcid](https://github.com/ropensci-archive/rorcid) is used to retrieve works from ORCID. Package `rorcid` is archived now and there is no alternative R package to access ORCID API in R. This package use two system variables to authenticate orcid (i.e. `ORCID_CLIENT_ID` and `ORCID_CLIENT_SECRET`).
+
+## Usage
+
+Function `works_all` is used to retrive works from all resources above.
