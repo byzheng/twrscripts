@@ -64,7 +64,7 @@ works_scopus <- function(is_new = FALSE) {
     }
     all_works <- dplyr::bind_rows(all_works) |> tibble::as_tibble()
 
-    works <- all_works
+    works_authoring(all_works, is_new)
 
     return(all_works)
 }
