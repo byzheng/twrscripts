@@ -17,7 +17,7 @@
 #'
 #' @return A data frame for all works obtained from Scopus
 #' @export
-scopus_works <- function(is_new = FALSE) {
+works_scopus <- function(is_new = FALSE) {
     rtiddlywiki::tw_options(host = tws_options()$host)
 
     f <- "[tag[Colleague]has[scopus]!has[draft.of]]"
@@ -51,16 +51,20 @@ scopus_works <- function(is_new = FALSE) {
             works <- readRDS(out_file) |>
                 dplyr::mutate(is_new = FALSE)
         } else {
+            message("Get works from SCOPUS for ", scopus_ids$title[i])
             works <- rscopus::author_df(au_id = scopus_ids$scopus[i]) |>
                 dplyr::mutate(is_new = TRUE)
             saveRDS(works, out_file)
             Sys.sleep(1)
         }
         works <- works |>
-            dplyr::select(doi = .data$`prism:doi`, is_new) |>
+            dplyr::select(doi = "prism:doi", is_new) |>
             dplyr::mutate(title = scopus_ids$title[i])
         all_works[[i]] <- works
     }
-    all_works <- dplyr::bind_rows(all_works)
+    all_works <- dplyr::bind_rows(all_works) |> tibble::as_tibble()
+
+    works <- all_works
+
     return(all_works)
 }
