@@ -3,5 +3,7 @@
 export(get_dois)
 export(tws_options)
 export(tws_reset)
+export(works_all)
+export(works_orcid)
 export(works_scopus)
 importFrom(rlang,.data)

@@ -20,6 +20,7 @@ Set or get options for my package
 The following options are supported
  host: host of tiddlywiki
  output: output for intermediate files
+ author_max: Maximum number of authors/colleagues to download
  file_expired: days to intermediate files expired
  file_remove_max: maximum number of intermediate file to remove
 }

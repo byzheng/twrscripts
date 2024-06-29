@@ -14,6 +14,7 @@ TWS_OPTIONS <- settings::options_manager(
     file_remove_max = 3
 )
 
+rtiddlywiki::tw_options(host = TWS_OPTIONS()$host)
 
 #' Set or get options for my package
 #'
@@ -23,6 +24,7 @@ TWS_OPTIONS <- settings::options_manager(
 #' The following options are supported
 #'  host: host of tiddlywiki
 #'  output: output for intermediate files
+#'  author_max: Maximum number of authors/colleagues to download
 #'  file_expired: days to intermediate files expired
 #'  file_remove_max: maximum number of intermediate file to remove
 #'
@@ -34,6 +36,8 @@ tws_options <- function(...){
     # protect against the use of reserved words.
     settings::stop_if_reserved(...)
     TWS_OPTIONS(...)
+    rtiddlywiki::tw_options(host = TWS_OPTIONS()$host)
+    TWS_OPTIONS()
 }
 
 #' Reset global options for pkg

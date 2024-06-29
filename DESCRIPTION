@@ -22,8 +22,10 @@ Imports:
    dplyr,
    rlang,
    rscopus,
-   rtiddlywiki
+   rtiddlywiki,
+   rorcid
 Remotes:
     byzheng/rtiddlywiki,
-    muschellij2/rscopus
+    muschellij2/rscopus,
+    ropensci-archive/rorcid
 RoxygenNote: 7.3.1
