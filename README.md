@@ -46,3 +46,9 @@ If you run authoring as daily schedule task, all files will be gradually updated
 ## Authoring publications
 
 The authors of a publication is searched from multiple platforms (i.e. Personal Webpage, Google Scholar, ORCID, ResearcherID and Scopus) according to related information.
+
+!!! Scopus
+
+In the tiddlers with tag `Colleague`, field `scopus` is used as author profile in [Scopus](https://www.scopus.com/). R package [rscopus](https://github.com/muschellij2/rscopus) is used to retrieve publication list for each colleague. See [rscopus](https://github.com/muschellij2/rscopus) to configure API Key for Scopus.
+
+
