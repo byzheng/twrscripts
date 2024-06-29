@@ -10,6 +10,14 @@ R package `twrscripts` is a collections of R Scripts for Tiddlywiki to manage
 * authors/colleagues of publications
 * reference list of a publication
 
+## Installation
+
+Install the developing version from [Github](https://github.com/byzheng/twrscripts).
+
+```r
+remotes::install_github('byzheng/twrscripts')
+```
+
 
 ## Data structure
 
