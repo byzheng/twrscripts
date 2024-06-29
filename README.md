@@ -39,7 +39,7 @@ in this package.
 * field `cited-count` for number of publications to cite this publication.
 
 ## Output and intermediate files
-To avoid redownloading data from multiple resources (e.g. Google Scholar, ORCID, Web of Science/ResearcherID, Scopus), retrieved data are locally stored and reused for a period. The local folder is configured by option `output` with default `output` in the working directory. The data will be expried in certain days (90 days in default and configured by option `file_expired`). As online API constrained daily request number, only a small number of files are removed at each call (3 in default and configured by option `file_remove_max`).
+To avoid redownloading data from multiple resources (e.g. Google Scholar, ORCID, Web of Science/ResearcherID, Scopus), retrieved data are locally stored and reused for a period. The local folder is configured by option `output` with default `output` in the working directory. The data will be expried in certain days (90 days in default and configured by option `file_expired`). As online API constrained daily request number, only a small number of files are removed at each call (3 in default and configured by option `file_remove_max`). The maximum number of colleagues is limited for each call by option `author_max` (10 in default) to constrain request number for WebAPI.
 
 If you run authoring as daily schedule task, all files will be gradually updated. 
 
