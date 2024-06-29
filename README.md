@@ -49,6 +49,13 @@ The authors of a publication is searched from multiple platforms (i.e. Personal 
 
 ### Scopus
 
-In the tiddlers with tag `Colleague`, field `scopus` is used as author profile in [Scopus](https://www.scopus.com/). R package [rscopus](https://github.com/muschellij2/rscopus) is used to retrieve publication list for each colleague. See [rscopus](https://github.com/muschellij2/rscopus) to configure API Key for Scopus.
+In the tiddlers with tag `Colleague`, field `scopus` is used as author profile in [Scopus](https://www.scopus.com/). 
+
+R package [rscopus](https://github.com/muschellij2/rscopus) is used to retrieve publication list for each colleague. See [rscopus](https://github.com/muschellij2/rscopus) to configure API Key for Scopus.
 
 
+### ORCID
+
+In the tiddlers with tag `Colleague`, field `orcid` is used as author profile in [ORCID](https://orcid.org/). 
+
+R package [rorcid](https://github.com/ropensci-archive/rorcid) is used to retrieve works from ORCID. Package `rorcid` is archived now and there is no alternative R package to access ORCID API in R. This package use two system variables to authenticate orcid (i.e. `ORCID_CLIENT_ID` and `ORCID_CLIENT_SECRET`).
