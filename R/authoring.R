@@ -24,10 +24,10 @@ works_authoring <- function(works, is_new = FALSE) {
     }
 
     dois <- get_dois() |>
-        dplyr::rename(key = .data$title)
+        dplyr::rename(key = "title")
 
     authors_key <- works  |>
-        dplyr::rename(author = .data$title) |>
+        dplyr::rename(author = "title") |>
         dplyr::left_join(dois, by = "doi")  |>
         dplyr::filter(!is.na(.data$key))
 

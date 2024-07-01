@@ -43,15 +43,22 @@ works_scopus <- function(is_new = FALSE) {
         remove_outfiles(files = files)
     }
 
-    request_num <- min(tws_options()$author_max, nrow(scopus_ids))
+    request_num <- tws_options()$author_max
+    request_num_now <- 0
     all_works <- list()
     i <- 1
-    for (i in seq_len(request_num)) {
+    for (i in seq_len(nrow(scopus_ids))) {
         out_file <- file.path(out_folder, paste0(scopus_ids$scopus[i], ".Rds"))
         if (file.exists(out_file)) {
             works <- readRDS(out_file) |>
                 dplyr::mutate(is_new = FALSE)
         } else {
+            request_num_now <- request_num_now + 1
+            if (request_num_now > request_num) {
+                message("Request number is more than the limit ", request_num)
+                message("Call this function again for more request")
+                break
+            }
             message("Get works from SCOPUS for ", scopus_ids$title[i])
             works <- rscopus::author_df(au_id = scopus_ids$scopus[i]) |>
                 dplyr::mutate(is_new = TRUE)

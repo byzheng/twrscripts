@@ -23,7 +23,9 @@ Imports:
    rlang,
    rscopus,
    rtiddlywiki,
-   rorcid
+   rorcid,
+   stringi,
+   httr
 Remotes:
     byzheng/rtiddlywiki,
     muschellij2/rscopus,
