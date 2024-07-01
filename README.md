@@ -78,6 +78,14 @@ R package `scholar` is used to retrieve works from [Google Scholar](https://scho
 
 In the tiddlers with tag `Colleague`, field `url` is used as author homepage. All `doi`s in the url are assumed as colleague's publications. 
 
+## Reference list
+
+The reference list of a publication is obtained from [crossref](https://www.crossref.org/) with R package [rcrossref](https://github.com/ropensci/rcrossref) and added into field `reference` in the Tiddlywiki. Two fields `reference-count` and `cited-count` is also updated for number of reference and citation for a publication, respectively. 
+
+
+
+
+
 ## Usage
 
 Function `works` is used to retrive works from all resources above.
