@@ -28,7 +28,8 @@ Imports:
    httr,
    stats,
    stringdist,
-   scholar
+   scholar,
+   rcrossref
 Remotes:
     byzheng/rtiddlywiki,
     muschellij2/rscopus,
