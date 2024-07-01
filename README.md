@@ -69,6 +69,11 @@ This package use environment variable to authenticate WOS (i.e. `WOS_STARTER_KEY
 
 R package [rorcid](https://github.com/ropensci-archive/rorcid) is used to retrieve works from ORCID. Package `rorcid` is archived now and there is no alternative R package to access ORCID API in R. This package use two system variables to authenticate orcid (i.e. `ORCID_CLIENT_ID` and `ORCID_CLIENT_SECRET`).
 
+## Google Scholar
+
+R package `scholar` is used to retrieve works from [Google Scholar](https://scholar.google.com/) according to `google-scholar`field in Tiddlywiki. As Google Scholar does not provide DOI for publications, the publication is matched according to the same published year and journal and similar title. Consequently, the matching might not be accurate.
+
+
 ### Colleague Homepage
 
 In the tiddlers with tag `Colleague`, field `url` is used as author homepage. All `doi`s in the url are assumed as colleague's publications. 

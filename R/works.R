@@ -17,7 +17,8 @@ works <- function(is_new = TRUE) {
     works_homepage(is_new = is_new)
 
     message("Researcher ID")
-    works_wos(new = new)
-    # message("Google Scholar")
-    # with_scholar(new = new)
+    works_wos(is_new = is_new)
+
+    message("Google Scholar")
+    works_scholar(is_new = is_new)
 }
