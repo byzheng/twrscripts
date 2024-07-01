@@ -29,7 +29,8 @@ Imports:
    stats,
    stringdist,
    scholar,
-   rcrossref
+   rcrossref,
+   pinyin
 Remotes:
     byzheng/rtiddlywiki,
     muschellij2/rscopus,
