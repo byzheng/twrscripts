@@ -1,11 +1,10 @@
 
 #' Get works from Scopus using Scopus API.
 #'
-#' @description
+#' @details
 #' R package `rscopus` is used to retrieve works from Scopus according to `scopus`
 #' field in Tiddlywiki.
 #'
-#' @details
 #' The retrieved works are stored into subfolder `scopus` in the output folder which
 #' is defined by option `output`.
 #'

@@ -10,13 +10,15 @@ works_homepage(is_new = FALSE)
 \item{is_new}{Logical. Whether to only process new records.}
 }
 \value{
-A data frame for all works obtained from Scopus
+A data frame for all works obtained from homepage
 }
 \description{
-It assumes all dois in the homepage are colleague's publication. The field `url` is to
-define the homepage.
+Get works from homepage
 }
 \details{
+It assumes all dois in the homepage are colleague's publication. The field `url` is to
+define the homepage.
+
 The retrieved works are stored into subfolder `homepage` in the output folder which
 is defined by option `output`.
 

@@ -1,13 +1,12 @@
 
 #' Get works from ORCID using ORCID API.
 #'
-#' @description
+#' @details
 #' R package `rorcid` is used to retrieve works from ORCID according to `orcid`
 #' field in Tiddlywiki. Package `rorcid` is archived now and there is no alternative
 #' R package to access ORCID API in R. This package use two system variables to
 #' authenticate orcid (i.e. `ORCID_CLIENT_ID` and `ORCID_CLIENT_SECRET`).
 #'
-#' @details
 #' The retrieved works are stored into subfolder `orcid` in the output folder which
 #' is defined by option `output`.
 #'
@@ -17,7 +16,7 @@
 #'
 #' @param is_new Logical. Whether to only process new records.
 #'
-#' @return A data frame for all works obtained from Scopus
+#' @return A data frame for all works obtained from ORCID
 #' @export
 works_orcid <- function(is_new = FALSE) {
 

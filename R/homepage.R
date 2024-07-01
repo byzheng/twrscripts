@@ -1,11 +1,11 @@
 
 #' Get works from homepage
 #'
-#' @description
+#'
+#' @details
 #' It assumes all dois in the homepage are colleague's publication. The field `url` is to
 #' define the homepage.
 #'
-#' @details
 #' The retrieved works are stored into subfolder `homepage` in the output folder which
 #' is defined by option `output`.
 #'
@@ -15,7 +15,7 @@
 #'
 #' @param is_new Logical. Whether to only process new records.
 #'
-#' @return A data frame for all works obtained from Scopus
+#' @return A data frame for all works obtained from homepage
 #' @export
 works_homepage <- function(is_new = FALSE) {
 

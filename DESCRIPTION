@@ -25,7 +25,8 @@ Imports:
    rtiddlywiki,
    rorcid,
    stringi,
-   httr
+   httr,
+   stats
 Remotes:
     byzheng/rtiddlywiki,
     muschellij2/rscopus,

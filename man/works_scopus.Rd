@@ -13,10 +13,12 @@ works_scopus(is_new = FALSE)
 A data frame for all works obtained from Scopus
 }
 \description{
-R package `rscopus` is used to retrieve works from Scopus according to `scopus`
-field in Tiddlywiki.
+Get works from Scopus using Scopus API.
 }
 \details{
+R package `rscopus` is used to retrieve works from Scopus according to `scopus`
+field in Tiddlywiki.
+
 The retrieved works are stored into subfolder `scopus` in the output folder which
 is defined by option `output`.
 

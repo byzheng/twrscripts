@@ -60,6 +60,14 @@ In the tiddlers with tag `Colleague`, field `orcid` is used as author profile in
 
 R package [rorcid](https://github.com/ropensci-archive/rorcid) is used to retrieve works from ORCID. Package `rorcid` is archived now and there is no alternative R package to access ORCID API in R. This package use two system variables to authenticate orcid (i.e. `ORCID_CLIENT_ID` and `ORCID_CLIENT_SECRET`).
 
+### Researcher ID
+
+In the tiddlers with tag `Colleague`, field `researcherid` is used as author profile in [Web of Scient](https://www.webofscience.com/). 
+
+[WOS Starter API] (https://developer.clarivate.com/apis/wos-starter) is used to retrieve works from Web of Scient.
+This package use environment variable to authenticate WOS (i.e. `WOS_STARTER_KEY`).
+
+R package [rorcid](https://github.com/ropensci-archive/rorcid) is used to retrieve works from ORCID. Package `rorcid` is archived now and there is no alternative R package to access ORCID API in R. This package use two system variables to authenticate orcid (i.e. `ORCID_CLIENT_ID` and `ORCID_CLIENT_SECRET`).
 
 ### Colleague Homepage
 
