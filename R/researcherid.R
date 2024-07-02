@@ -7,7 +7,7 @@ wos_starter_request <- function(query, page, limit = 50) {
                           query = list(q=query, limit = limit, page = page),
                           config = httr::add_headers("X-ApiKey" = key))
     Sys.sleep(stats::runif(1) * 3 + 1)
-    message(httr::status_code(response))
+    #message(httr::status_code(response))
     stopifnot(httr::status_code(response) == 200)
     httr::content(response)
 }
