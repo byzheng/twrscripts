@@ -5,11 +5,17 @@
 
 # tw-rscripts
 
-R package `twrscripts` is a collections of R Scripts for Tiddlywiki to manage
+R package `twrscripts` is a collections of R Scripts for [Tiddlywiki](https://tiddlywiki.com/) to manage
 
 * authoring publications using multiple sources (ORCID, Scopus, Google Scholar, ResearcherID, homepage)
 * reference list of publications (crossref)
 
+with following scenarios
+
+* Tiddlywiki is configured with [Node.js](https://tiddlywiki.com/static/Installing%2520TiddlyWiki%2520on%2520Node.js.html) in localhost or no authortication requirement.
+* using [TW-Refnotes](https://kookma.github.io/TW-Refnotes/) to manage reference in Tiddlywiki
+* using data structure below.
+* proper configurations of API authortication for multiple sources (e.g. ORCID, Scopus, ResearcherID). 
 
 ## Installation
 
