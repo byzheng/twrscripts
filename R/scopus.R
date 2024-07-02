@@ -73,5 +73,5 @@ works_scopus <- function(is_new = FALSE) {
 
     works_authoring(all_works, is_new)
 
-    return(all_works)
+    return(invisible())
 }

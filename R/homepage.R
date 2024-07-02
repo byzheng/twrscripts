@@ -28,7 +28,7 @@ works_homepage <- function(is_new = FALSE) {
     homepages <- homepages |>
         purrr::map_df(function(x){
             list(title = x$title,
-                           url = x$url)
+                 url = x$url)
         }) |>
         dplyr::filter(!is.na(.data$url), nchar(.data$url) > 0)
 
@@ -46,6 +46,7 @@ works_homepage <- function(is_new = FALSE) {
     httr::set_config(httr::config(ssl_verifypeer = 0L))
 
     request_num <- tws_options()$author_max
+    request_num <- nrow(homepages) + 1
     request_num_now <- 0
     all_works <- list()
     i <- 1

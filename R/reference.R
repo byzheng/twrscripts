@@ -105,4 +105,5 @@ reference <- function() {
     }
 
     saveRDS(all_refs, out_file)
+    return(invisible())
 }

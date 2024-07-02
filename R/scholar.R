@@ -62,16 +62,16 @@ works_scholar <- function(is_new = FALSE) {
 
 
             x <- try({
-                authors <- scholar::get_publications(scholar_ids$scholar[i])
+                works <- scholar::get_publications(scholar_ids$scholar[i])
                 Sys.sleep(stats::runif(1) * 10 + 10)
-                if (is.null(authors)) {
+                if (is.null(works)) {
                     stop("Empty authors")
                 }
-                if (nrow(authors) == 0) {
+                if (nrow(works) == 0) {
                     next
                 }
-                saveRDS(authors, out_file)
-                authors$is_new <- TRUE
+                saveRDS(works, out_file)
+                works$is_new <- TRUE
             })
             if (inherits(x, "try-error")) {
                 next
@@ -128,7 +128,9 @@ works_scholar <- function(is_new = FALSE) {
         }
     })
     res <- dplyr::bind_rows(res)
-
+    if (nrow(res) == 0) {
+        return(invisible())
+    }
     works_ids <- all_works |>
         dplyr::select("pubid", "scholar") |>
         dplyr::distinct()
