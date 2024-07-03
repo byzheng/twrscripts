@@ -5,11 +5,17 @@
 
 # tw-rscripts
 
-R package `twrscripts` is a collections of R Scripts for Tiddlywiki to manage
+R package `twrscripts` is a collections of R Scripts for [Tiddlywiki](https://tiddlywiki.com/) to manage
 
 * authoring publications using multiple sources (ORCID, Scopus, Google Scholar, ResearcherID, homepage)
 * reference list of publications (crossref)
 
+with following scenarios
+
+* Tiddlywiki is configured with [Node.js](https://tiddlywiki.com/static/Installing%2520TiddlyWiki%2520on%2520Node.js.html) in localhost or no authortication requirement.
+* using [TW-Refnotes](https://kookma.github.io/TW-Refnotes/) to manage reference in Tiddlywiki
+* using data structure below.
+* proper configurations of API authortication for multiple sources (e.g. ORCID, Scopus, ResearcherID). 
 
 ## Installation
 
@@ -89,4 +95,45 @@ The reference list of a publication is obtained from [crossref](https://www.cros
 
 ## Usage
 
-Function `works` is used to retrive works from all resources above.
+* Function `works` is to retrive works from all resources above.
+* Function `reference` is to get reference list.
+* Function `convert_pinyin` is to convert tiddler with Chinese title into pinyin in `aka` field.
+* Function `check_colleague` is to check duplicate fields for colleagues.
+
+Alternatively, a batch job can be created for daily schedule (all records) and manully execution (new records). Here is an example R Script for all functions
+
+```r
+args = commandArgs(trailingOnly=TRUE)
+#source("Rcode/function.R")
+message(Sys.time())
+if (length(args) == 0) {
+    is_new <- TRUE
+} else {
+    is_new <- FALSE
+}
+twrscripts::tws_options(host = "http://127.0.0.1:8080/",
+                        output = "output")
+# Check colleagues
+tryCatch({
+    twrscripts::check_colleagues()    
+}, warning = function(w) {
+    warning(w)
+    stop("Duplicates in the colleague's fields.")
+})
+
+system.time({
+    message("Update works for colleagues")
+    twrscripts::works(is_new = is_new)
+    message("Get reference list from crossref")
+    twrscripts::reference()
+    message("Convert title to pinyin")
+    twrscripts::convert_pinyin()
+})
+```
+
+This R script can be saved into a file, e.g. tw_script.R. In Windows, a batch script can be used to schedule a daily task (e.g. tw_script.bat).
+
+```
+Rscript.exe tw_script.R update 1>standard.out 2>standdar.err
+```
+
