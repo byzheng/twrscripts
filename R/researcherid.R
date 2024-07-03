@@ -58,7 +58,7 @@ works_wos <- function(is_new = FALSE) {
     wos_ids <- wos_ids |>
         purrr::map_df(function(x){
             list(title = x$title,
-                           wos = x$researcherid)
+                 wos = x$researcherid)
         }) |>
         dplyr::mutate(wos = basename(.data$wos))
 

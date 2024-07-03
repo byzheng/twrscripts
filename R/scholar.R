@@ -28,7 +28,7 @@ works_scholar <- function(is_new = FALSE) {
     scholar_ids <- scholar_ids |>
         purrr::map_df(function(x){
             list(title = x$title,
-                           scholar = x$`google-scholar`)
+                 scholar = x$`google-scholar`)
         }) |>
         dplyr::mutate(scholar = gsub("^.*user=([a-zA-Z0-9_-]+).*$", "\\1", stringi::stri_trim(.data$scholar)))
 
@@ -101,7 +101,7 @@ works_scholar <- function(is_new = FALSE) {
         dplyr::mutate(title = tolower(.data$title)) |>
         dplyr::arrange(.data$title) |>
         dplyr::mutate(year = as.character(.data$year),
-               journal = tolower(.data$journal))
+                      journal = tolower(.data$journal))
 
     # Match bibtex-entry with similarity
     tiddllers <- rtiddlywiki::get_tiddlers(filter = "[tag[bibtex-entry]has[bibtex-doi]has[bibtex-journaltitle]has[bibtex-year]has[bibtex-title]]")

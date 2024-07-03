@@ -31,11 +31,10 @@ reference <- function() {
     if (nrow(dois) == 0) {
         return(NULL)
     }
-    message("New dois: ", nrow(dois))
     i <- 1
     new_refs <- list()
     for (i in seq(along = dois[[1]])) {
-        message(dois$title[i])
+        message("Get reference from crossref for doi ", dois$doi[i], " with ", dois$title[i])
         works <- rcrossref::cr_works(dois = dois$doi[i])
         if (!rlang::has_name(works$data, "reference") ||
             !rlang::has_name(works$data$reference[[1]], "DOI")) {
