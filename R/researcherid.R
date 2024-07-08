@@ -8,6 +8,9 @@ wos_starter_request <- function(query, page, limit = 50) {
                           config = httr::add_headers("X-ApiKey" = key))
     Sys.sleep(stats::runif(1) * 3 + 1)
     #message(httr::status_code(response))
+    if (httr::status_code(response) == 429) {
+        stop("Too many requests to wos-starter API. Wait for next day.")
+    }
     stopifnot(httr::status_code(response) == 200)
     httr::content(response)
 }
