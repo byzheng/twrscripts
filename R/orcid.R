@@ -34,7 +34,7 @@ works_orcid <- function(is_new = FALSE) {
             list(title = x$title,
                            orcid = x$orcid)
         }) |>
-        dplyr::mutate(orcid = gsub("^.*orcid\\.org/(.*)$", "\\1", .data$orcid))
+        dplyr::mutate(orcid = url_id(.data$orcid))
 
     out_folder <- file.path(tws_options()$output, "orcid")
     if (!dir.exists(out_folder)) {

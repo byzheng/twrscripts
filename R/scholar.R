@@ -30,7 +30,7 @@ works_scholar <- function(is_new = FALSE) {
             list(title = x$title,
                  scholar = x$`google-scholar`)
         }) |>
-        dplyr::mutate(scholar = gsub("^.*user=([a-zA-Z0-9_-]+).*$", "\\1", stringi::stri_trim(.data$scholar)))
+        dplyr::mutate(scholar = url_id(.data$scholar, "user"))
 
     out_folder <- file.path(tws_options()$output, "scholar")
     if (!dir.exists(out_folder)) {

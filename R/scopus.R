@@ -17,8 +17,6 @@
 #' @return A data frame for all works obtained from Scopus
 #' @export
 works_scopus <- function(is_new = FALSE) {
-    rtiddlywiki::tw_options(host = tws_options()$host)
-
     f <- "[tag[Colleague]has[scopus]!has[draft.of]]"
 
     scopus_ids <- rtiddlywiki::get_tiddlers(f)
@@ -26,19 +24,12 @@ works_scopus <- function(is_new = FALSE) {
         return(NULL)
     }
 
-    get_authorid <- function(url) {
-        res <- c()
-        for (i in seq(along = url)) {
-            res[i] <- httr2::url_parse(url[i])$query$authorId
-        }
-        res
-    }
     scopus_ids <- scopus_ids |>
         purrr::map_df(function(x){
             tibble::tibble(title = x$title,
                    scopus = x$scopus)
         }) |>
-        dplyr::mutate(scopus = get_authorid(.data$scopus))
+        dplyr::mutate(scopus = url_id(.data$scopus, "authorId"))
 
     out_folder <- file.path(tws_options()$output, "scopus")
     if (!dir.exists(out_folder)) {

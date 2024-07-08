@@ -31,3 +31,21 @@ remove_outfiles <- function(files) {
     file.remove(files_remove$file)
     return(invisible())
 }
+
+
+
+url_id <- function(url, name = NULL) {
+    url <- tolower(url)
+    name <- tolower(name)
+    res <- c()
+    for (i in seq(along = url)) {
+        parsed <- httr2::url_parse(url[i])
+        if (is.null(name)) {
+            v <- basename(parsed$path)
+        } else {
+            v <- parsed$query[[name]]
+        }
+        res[i] <- v
+    }
+    res
+}

@@ -60,7 +60,7 @@ works_wos <- function(is_new = FALSE) {
             list(title = x$title,
                  wos = x$researcherid)
         }) |>
-        dplyr::mutate(wos = basename(.data$wos))
+        dplyr::mutate(wos = url_id(.data$wos))
 
     out_folder <- file.path(tws_options()$output, "researcherid")
     if (!dir.exists(out_folder)) {
