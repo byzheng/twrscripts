@@ -36,7 +36,9 @@ remove_outfiles <- function(files) {
 
 url_id <- function(url, name = NULL) {
     url <- tolower(url)
-    name <- tolower(name)
+    if (!is.null(name)) {
+        name <- tolower(name)
+    }
     res <- c()
     for (i in seq(along = url)) {
         parsed <- httr2::url_parse(url[i])
