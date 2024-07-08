@@ -25,12 +25,20 @@ works_scopus <- function(is_new = FALSE) {
     if (length(scopus_ids) == 0) {
         return(NULL)
     }
+
+    get_authorid <- function(url) {
+        res <- c()
+        for (i in seq(along = url)) {
+            res[i] <- httr2::url_parse(url[i])$query$authorId
+        }
+        res
+    }
     scopus_ids <- scopus_ids |>
         purrr::map_df(function(x){
             tibble::tibble(title = x$title,
                    scopus = x$scopus)
         }) |>
-        dplyr::mutate(scopus = gsub("^.+authorId=(\\d+)$", "\\1", .data$scopus))
+        dplyr::mutate(scopus = get_authorid(.data$scopus))
 
     out_folder <- file.path(tws_options()$output, "scopus")
     if (!dir.exists(out_folder)) {
