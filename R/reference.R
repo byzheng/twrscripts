@@ -26,9 +26,11 @@ crossref <- function(remove_old = TRUE) {
         old_refs <- all_refs |>
             dplyr::distinct(.data$title, .data$update_date) |>
             dplyr::filter((as.numeric(Sys.Date()) - as.numeric(.data$update_date)) > 30) |>
-            dplyr::slice(seq_len(30))
+            dplyr::slice(seq_len(30)) |>
+            dplyr::select("title")
         if (nrow(old_refs) > 0) {
-            stop("Implement me...")
+            all_refs <- all_refs |>
+                dplyr::anti_join(old_refs, by = "title")
         }
     }
 
@@ -114,9 +116,11 @@ opencitations <- function(remove_old = TRUE) {
         old_citations <- all_citations |>
             dplyr::distinct(.data$title, .data$update_date) |>
             dplyr::filter((as.numeric(Sys.Date()) - as.numeric(.data$update_date)) > 30) |>
-            dplyr::slice(seq_len(30))
+            dplyr::slice(seq_len(30)) |>
+            dplyr::select("title")
         if (nrow(old_citations) > 0) {
-            stop("Implement me...")
+            all_citations <- all_citations |>
+                dplyr::anti_join(old_citations, by = "title")
         }
     }
     # only process missing dois for crossref
