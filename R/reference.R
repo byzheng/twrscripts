@@ -15,7 +15,7 @@ crossref <- function(remove_old = TRUE) {
             all_refs$update_date <- Sys.Date()
         }
         # all_refs <- all_refs |>
-        #     dplyr::filter(title != "farre_reliability_2007")
+        #     dplyr::filter(title != "nelson_quantitative_2014")
     } else {
         all_refs <- data.frame(title = character(0), doi = character(0),
                                update_date = as.Date(numeric(0)))
@@ -66,13 +66,24 @@ crossref <- function(remove_old = TRUE) {
     saveRDS(all_refs, out_file)
 
 
-    refs <- new_refs |>
+    updated_refs <- all_refs |>
+        dplyr::filter(.data$doi %in% dois$doi) |>
+        dplyr::bind_rows(new_refs) |>
+        dplyr::pull(.data$title) |>
+        unique()
+
+
+    refs <- all_refs |>
+        dplyr::filter(.data$title %in% updated_refs) |>
         dplyr::left_join(all_dois |>
                               dplyr::rename(reference = "title"), by = "doi") |>
         dplyr::filter(!is.na(.data$reference)) |>
         dplyr::select("title", "reference") |>
         dplyr::distinct() |>
         dplyr::filter(.data$title %in% all_dois$title)
+
+    # Existing entry to cite this one
+
     return(refs)
 }
 
@@ -89,6 +100,8 @@ opencitations <- function(remove_old = TRUE) {
     if (file.exists(out_file)) {
         all_citations <- readRDS(out_file) |>
             tibble::tibble()
+        # all_citations <- all_citations |>
+        #     dplyr::filter(title != "nelson_quantitative_2014")
     } else {
         all_citations <- data.frame(creation = character(0), citing = character(0),
                                     cited = character(0),
@@ -152,25 +165,14 @@ opencitations <- function(remove_old = TRUE) {
         dplyr::bind_rows(new_citations) |>
         dplyr::distinct()
 
-    new_citations <- all_citations |>
-        dplyr::filter(.data$citing %in% new_citations$citing)
 
     saveRDS(all_citations, out_file)
 
-    # Find titles for new citations
-    all_refs <- new_citations |>
-        tibble::tibble() |>
-        dplyr::filter(!is.na(.data$citing)) |>
-        dplyr::select("cited_doi" = "cited", "doi" = "citing") |>
-        dplyr::distinct() |>
-        dplyr::right_join(all_dois, by = "doi") |>
-        dplyr::select("title", "doi" = "cited_doi") |>
-        dplyr::arrange(.data$title) |>
-        dplyr::distinct() |>
-        dplyr::filter(!is.na(.data$doi))
+    updated_refs <- new_citations |>
+        dplyr::filter(.data$citing %in% all_dois$doi)
 
-    # find all titles for all citations
     all_refs <- all_citations |>
+        dplyr::filter(.data$citing %in% updated_refs$citing) |>
         dplyr::filter(!is.na(.data$citing)) |>
         dplyr::select("cited_doi" = "cited", "doi" = "citing") |>
         dplyr::distinct() |>
@@ -179,10 +181,6 @@ opencitations <- function(remove_old = TRUE) {
         dplyr::arrange(.data$title) |>
         dplyr::distinct() |>
         dplyr::filter(!is.na(.data$doi)) |>
-        dplyr::filter(.data$title %in% all_refs$title)
-
-
-    all_refs <- all_refs |>
         dplyr::right_join(all_dois |> dplyr::rename(reference = "title"), by = "doi") |>
         dplyr::select("title", "reference") |>
         dplyr::distinct() |>
