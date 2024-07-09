@@ -4,10 +4,12 @@
 \alias{reference}
 \title{Get reference list for publications from crossref and opencitations}
 \usage{
-reference(remove_old = TRUE)
+reference(remove_old = TRUE, all = FALSE)
 }
 \arguments{
 \item{remove_old}{whether to remove old files}
+
+\item{all}{whether to get all reference}
 }
 \value{
 no return

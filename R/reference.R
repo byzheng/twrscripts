@@ -1,5 +1,5 @@
 
-crossref <- function(remove_old = TRUE) {
+crossref <- function(remove_old = TRUE, all = FALSE) {
     # Get all tiddlers
 
     all_dois <- get_dois()
@@ -37,46 +37,47 @@ crossref <- function(remove_old = TRUE) {
 
     # only process missing dois for crossref
     dois <- all_dois[!(all_dois$title %in% unique(all_refs$title)),]
-
-    if (nrow(dois) == 0) {
-        return(invisible())
-    }
-    i <- 1
     new_refs <- list()
-    for (i in seq(along = dois[[1]])) {
-        message("Get reference from crossref for doi ", dois$doi[i], " with ", dois$title[i])
-        works <- rcrossref::cr_works(dois = dois$doi[i])
-        if (!rlang::has_name(works$data, "reference") ||
-            !rlang::has_name(works$data$reference[[1]], "DOI")) {
-            refs_i <- tibble::tibble(title = dois$title[i],
-                             doi = "",
-                             update_date = Sys.Date())
-        } else {
-            refs_i <- tibble::tibble(title = dois$title[i],
-                             doi = works$data$reference[[1]]$DOI,
-                             update_date = Sys.Date())
+    if (nrow(dois) > 0) {
+        i <- 1
+        for (i in seq(along = dois[[1]])) {
+            message("Get reference from crossref for doi ", dois$doi[i], " with ", dois$title[i])
+            works <- rcrossref::cr_works(dois = dois$doi[i])
+            if (!rlang::has_name(works$data, "reference") ||
+                !rlang::has_name(works$data$reference[[1]], "DOI")) {
+                refs_i <- tibble::tibble(title = dois$title[i],
+                                 doi = "",
+                                 update_date = Sys.Date())
+            } else {
+                refs_i <- tibble::tibble(title = dois$title[i],
+                                 doi = works$data$reference[[1]]$DOI,
+                                 update_date = Sys.Date())
+            }
+            new_refs[[i]] <- refs_i
+            Sys.sleep(1)
         }
-        new_refs[[i]] <- refs_i
-        Sys.sleep(1)
+        new_refs <- new_refs |>
+            dplyr::bind_rows() |>
+            dplyr::filter(!is.na(.data$doi))
+        all_refs <- all_refs |>
+            dplyr::bind_rows(new_refs) |>
+            dplyr::distinct()
+        saveRDS(all_refs, out_file)
     }
-    new_refs <- new_refs |>
-        dplyr::bind_rows() |>
-        dplyr::filter(!is.na(.data$doi))
-    all_refs <- all_refs |>
-        dplyr::bind_rows(new_refs) |>
-        dplyr::distinct()
-    saveRDS(all_refs, out_file)
 
-
-    updated_refs <- all_refs |>
-        dplyr::filter(.data$doi %in% dois$doi) |>
-        dplyr::bind_rows(new_refs) |>
-        dplyr::pull(.data$title) |>
-        unique()
-
-
+    if (!all) {
+        if (length(new_refs) == 0) {
+            return(invisible())
+        }
+        updated_refs <- all_refs |>
+            dplyr::filter(.data$doi %in% dois$doi) |>
+            dplyr::bind_rows(new_refs) |>
+            dplyr::pull(.data$title) |>
+            unique()
+        all_refs <- all_refs |>
+            dplyr::filter(.data$title %in% updated_refs)
+    }
     refs <- all_refs |>
-        dplyr::filter(.data$title %in% updated_refs) |>
         dplyr::left_join(all_dois |>
                               dplyr::rename(reference = "title"), by = "doi") |>
         dplyr::filter(!is.na(.data$reference)) |>
@@ -90,7 +91,7 @@ crossref <- function(remove_old = TRUE) {
 }
 
 
-opencitations <- function(remove_old = TRUE) {
+opencitations <- function(remove_old = TRUE, all = FALSE) {
     all_dois <- get_dois()
 
     out_folder <- file.path(tws_options()$output, "opencitations")
@@ -126,57 +127,61 @@ opencitations <- function(remove_old = TRUE) {
     # only process missing dois for crossref
     dois <- all_dois[!(all_dois$title %in% unique(all_citations$title)),]
 
-    if (nrow(dois) == 0) {
-        return(invisible())
-    }
-
-    # Get data from opencitations for missing dois
-    i <- 1
     new_citations <- list()
-    for (i in seq(along = dois[[1]])) {
-        message("Get citation list  from opencitations for doi ", dois$doi[i], " with ", dois$title[i])
-        x <- try({
-            url <- sprintf("https://opencitations.net/index/coci/api/v1/citations/%s", dois$doi[i])
-            citations <- httr::GET(url = url)
-            citations <- httr::content(citations)
-            if (length(citations) == 0) {
+    if (nrow(dois) > 0) {
+
+        # Get data from opencitations for missing dois
+        i <- 1
+
+        for (i in seq(along = dois[[1]])) {
+            message("Get citation list  from opencitations for doi ", dois$doi[i], " with ", dois$title[i])
+            x <- try({
+                url <- sprintf("https://opencitations.net/index/coci/api/v1/citations/%s", dois$doi[i])
+                citations <- httr::GET(url = url)
+                citations <- httr::content(citations)
+                if (length(citations) == 0) {
+                    citations <- data.frame(creation = NA, citing = NA,
+                                            cited = dois$doi[i],
+                                            title = dois$title[i],
+                                            update_date = Sys.Date())
+                } else {
+                    citations <- citations |> purrr::map_df(function(x) {
+                        list(creation = x$creation, citing = x$citing, oci = x$oci)
+                    }) |>
+                        dplyr::mutate(cited = dois$doi[i],
+                                      title = dois$title[i],
+                                      update_date = Sys.Date())
+                }
+                #Sys.sleep(1)
+            })
+            if (inherits(x, "try-error")) {
                 citations <- data.frame(creation = NA, citing = NA,
                                         cited = dois$doi[i],
                                         title = dois$title[i],
                                         update_date = Sys.Date())
-            } else {
-                citations <- citations |> purrr::map_df(function(x) {
-                    list(creation = x$creation, citing = x$citing, oci = x$oci)
-                }) |>
-                    dplyr::mutate(cited = dois$doi[i],
-                                  title = dois$title[i],
-                                  update_date = Sys.Date())
             }
-            #Sys.sleep(1)
-        })
-        if (inherits(x, "try-error")) {
-            citations <- data.frame(creation = NA, citing = NA,
-                                    cited = dois$doi[i],
-                                    title = dois$title[i],
-                                    update_date = Sys.Date())
+            new_citations[[i]] <- citations
         }
-        new_citations[[i]] <- citations
+        new_citations <- new_citations |>
+            dplyr::bind_rows() |>
+            dplyr::mutate(update_date = Sys.Date())
+        all_citations <- all_citations |>
+            dplyr::bind_rows(new_citations) |>
+            dplyr::distinct()
+
+
+        saveRDS(all_citations, out_file)
     }
-    new_citations <- new_citations |>
-        dplyr::bind_rows() |>
-        dplyr::mutate(update_date = Sys.Date())
-    all_citations <- all_citations |>
-        dplyr::bind_rows(new_citations) |>
-        dplyr::distinct()
-
-
-    saveRDS(all_citations, out_file)
-
-    updated_refs <- new_citations |>
-        dplyr::filter(.data$citing %in% all_dois$doi)
-
+    if (!all) {
+        if (length(new_citations) == 0) {
+            return(invisible())
+        }
+        updated_refs <- new_citations |>
+            dplyr::filter(.data$citing %in% all_dois$doi)
+        all_citations <- all_citations |>
+            dplyr::filter(.data$citing %in% updated_refs$citing)
+    }
     all_refs <- all_citations |>
-        dplyr::filter(.data$citing %in% updated_refs$citing) |>
         dplyr::filter(!is.na(.data$citing)) |>
         dplyr::select("cited_doi" = "cited", "doi" = "citing") |>
         dplyr::distinct() |>
@@ -220,11 +225,12 @@ opencitations <- function(remove_old = TRUE) {
 #' for number of reference and citation for a publication, respectively.
 #'
 #' @param remove_old whether to remove old files
+#' @param all whether to get all reference
 #' @return no return
 #' @export
-reference <- function(remove_old = TRUE) {
-    ref1 <- crossref(remove_old = remove_old)
-    ref2 <- opencitations(remove_old = remove_old)
+reference <- function(remove_old = TRUE, all = FALSE) {
+    ref1 <- crossref(remove_old = remove_old, all = all)
+    ref2 <- opencitations(remove_old = remove_old, all = all)
     if (is.null(ref1) && is.null(ref2)) {
         return(invisible())
     }
@@ -243,9 +249,12 @@ reference <- function(remove_old = TRUE) {
             break
         }
 
+        old_tiddler <- rtiddlywiki::get_tiddler(tiddlers_update$title[i])
+        all_refs_i <- rtiddlywiki::split_field(old_tiddler$fields$reference)
+        all_refs_i <- unique(c(all_refs_i, refs_tiddler$reference))
         rtiddlywiki::put_tiddler(tiddlers_update$title[i],
-                    fields = list(reference = refs_tiddler$reference,
-                                  `reference-count` = length(refs_tiddler$reference)))
+                    fields = list(reference = all_refs_i,
+                                  `reference-count` = length(all_refs_i)))
     }
 
     cited_title <- unique(all_refs$reference)
