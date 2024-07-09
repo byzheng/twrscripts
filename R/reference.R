@@ -101,14 +101,13 @@ opencitations <- function(remove_old = TRUE, all = FALSE) {
 
     out_file <- file.path(out_folder, "opencitations.Rds")
     if (file.exists(out_file)) {
-        all_citations <- readRDS(out_file) |>
+        all_refs <- readRDS(out_file) |>
             tibble::tibble()
-        # all_citations <- all_citations |>
-        #     dplyr::filter(title != "nelson_quantitative_2014")
+        # all_refs <- all_refs |>
+        #     dplyr::filter(title != "bottcher_phenological_2016")
     } else {
-        all_citations <- data.frame(creation = character(0), citing = character(0),
-                                    cited = character(0),
-                                    title = character(0),
+        all_refs <- data.frame(title = character(0),
+                                    doi = character(0),
                                     update_date = as.Date(numeric(0)))
     }
 
@@ -125,95 +124,74 @@ opencitations <- function(remove_old = TRUE, all = FALSE) {
         }
     }
     # only process missing dois for crossref
-    dois <- all_dois[!(all_dois$title %in% unique(all_citations$title)),]
+    dois <- all_dois[!(all_dois$title %in% unique(all_refs$title)),]
 
-    new_citations <- list()
+    new_refs <- list()
     if (nrow(dois) > 0) {
 
         # Get data from opencitations for missing dois
         i <- 1
 
         for (i in seq(along = dois[[1]])) {
-            message("Get citation list  from opencitations for doi ", dois$doi[i], " with ", dois$title[i])
+            message("Get reference list  from opencitations for doi ", dois$doi[i], " with ", dois$title[i])
             x <- try({
-                url <- sprintf("https://opencitations.net/index/coci/api/v1/citations/%s", dois$doi[i])
-                citations <- httr::GET(url = url)
-                citations <- httr::content(citations)
-                if (length(citations) == 0) {
-                    citations <- data.frame(creation = NA, citing = NA,
-                                            cited = dois$doi[i],
-                                            title = dois$title[i],
+                url <- sprintf("https://opencitations.net/index/coci/api/v1/references/%s", dois$doi[i])
+                references <- httr::GET(url = url)
+                references <- httr::content(references)
+                if (length(references) == 0) {
+                    references <- data.frame(title = dois$title[i],
+                                             doi = NA,
                                             update_date = Sys.Date())
                 } else {
-                    citations <- citations |> purrr::map_df(function(x) {
-                        list(creation = x$creation, citing = x$citing, oci = x$oci)
+                    references <- references |> purrr::map_df(function(x) {
+                        list(doi = x$cited)
                     }) |>
-                        dplyr::mutate(cited = dois$doi[i],
-                                      title = dois$title[i],
+                        dplyr::mutate(title = dois$title[i],
                                       update_date = Sys.Date())
                 }
                 #Sys.sleep(1)
             })
             if (inherits(x, "try-error")) {
-                citations <- data.frame(creation = NA, citing = NA,
-                                        cited = dois$doi[i],
-                                        title = dois$title[i],
+                references <- data.frame(title = dois$title[i],
+                                         doi = NA,
                                         update_date = Sys.Date())
             }
-            new_citations[[i]] <- citations
+            new_refs[[i]] <- references
         }
-        new_citations <- new_citations |>
+        new_refs <- new_refs |>
             dplyr::bind_rows() |>
             dplyr::mutate(update_date = Sys.Date())
-        all_citations <- all_citations |>
-            dplyr::bind_rows(new_citations) |>
+        all_refs <- all_refs |>
+            dplyr::bind_rows(new_refs) |>
             dplyr::distinct()
 
 
-        saveRDS(all_citations, out_file)
+        saveRDS(all_refs, out_file)
     }
+
     if (!all) {
-        if (length(new_citations) == 0) {
+        if (length(new_refs) == 0) {
             return(invisible())
         }
-        updated_refs <- new_citations |>
-            dplyr::filter(.data$citing %in% all_dois$doi)
-        all_citations <- all_citations |>
-            dplyr::filter(.data$citing %in% updated_refs$citing)
+        updated_refs <- all_refs |>
+            dplyr::filter(.data$doi %in% dois$doi) |>
+            dplyr::bind_rows(new_refs) |>
+            dplyr::pull(.data$title) |>
+            unique()
+        all_refs <- all_refs |>
+            dplyr::filter(.data$title %in% updated_refs)
     }
-    all_refs <- all_citations |>
-        dplyr::filter(!is.na(.data$citing)) |>
-        dplyr::select("cited_doi" = "cited", "doi" = "citing") |>
-        dplyr::distinct() |>
-        dplyr::right_join(all_dois, by = "doi") |>
-        dplyr::select("title", "doi" = "cited_doi") |>
-        dplyr::arrange(.data$title) |>
-        dplyr::distinct() |>
-        dplyr::filter(!is.na(.data$doi)) |>
-        dplyr::right_join(all_dois |> dplyr::rename(reference = "title"), by = "doi") |>
-        dplyr::select("title", "reference") |>
-        dplyr::distinct() |>
-        dplyr::filter(.data$title %in% all_dois$title)
-
-    # Merge data from crossref
-    crossref_folder <- file.path(tws_options()$output, "reference")
-    crossref_file <- file.path(crossref_folder, "crossref_reference.Rds")
-    if (!file.exists(crossref_file)) {
-        stop("Cannot find file ", crossref_file)
-    }
-    crossref <- readRDS(crossref_file)
-
-    all_refs <- crossref |>
-        dplyr::filter(.data$title %in% all_refs$title) |>
+    refs <- all_refs |>
         dplyr::left_join(all_dois |>
                              dplyr::rename(reference = "title"), by = "doi") |>
         dplyr::filter(!is.na(.data$reference)) |>
         dplyr::select("title", "reference") |>
         dplyr::distinct() |>
-        dplyr::filter(.data$title %in% all_dois$title) |>
-        dplyr::full_join(all_refs, by = c("title", "reference")) |>
-        dplyr::distinct()
-    return(all_refs)
+        dplyr::filter(.data$title %in% all_dois$title)
+
+    # Existing entry to cite this one
+
+    return(refs)
 }
 
 
