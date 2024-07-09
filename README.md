@@ -8,7 +8,7 @@
 R package `twrscripts` is a collections of R Scripts for [Tiddlywiki](https://tiddlywiki.com/) to manage
 
 * authoring publications using multiple sources (ORCID, Scopus, Google Scholar, ResearcherID, homepage)
-* reference list of publications (crossref)
+* reference list of publications (crossref and opencitations)
 
 with following scenarios
 
@@ -41,7 +41,7 @@ in this package.
 
 * `tags` with colleague names for authoring this publication.
 * field `bibtex-doi` as DOI for this publication. DOI is in many functions to identify a publication
-* field `reference` to list all references of a publication (only in the Tiddlywiki. Data obtained from [crossref](https://www.crossref.org/)).
+* field `reference` to list all references of a publication (only in the Tiddlywiki. Data obtained from [crossref](https://www.crossref.org/) and [opencitations](https://opencitations.net/)).
 * field `reference-count` for number of reference in field `reference`.
 * field `cited-count` for number of publications to cite this publication.
 
@@ -87,7 +87,7 @@ In the tiddlers with tag `Colleague`, field `url` is used as author homepage. Al
 
 ## Reference list
 
-The reference list of a publication is obtained from [crossref](https://www.crossref.org/) with R package [rcrossref](https://github.com/ropensci/rcrossref) and added into field `reference` in the Tiddlywiki. Two fields `reference-count` and `cited-count` is also updated for number of reference and citation for a publication, respectively. 
+The reference list of a publication is obtained from [crossref](https://www.crossref.org/) with R package [rcrossref](https://github.com/ropensci/rcrossref) and and [opencitations](https://opencitations.net/), and added into field `reference` in the Tiddlywiki. Two fields `reference-count` and `cited-count` is also updated for number of reference and citation for a publication, respectively. 
 
 
 

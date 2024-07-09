@@ -2,18 +2,21 @@
 % Please edit documentation in R/reference.R
 \name{reference}
 \alias{reference}
-\title{Get reference list for publications from crossref}
+\title{Get reference list for publications from crossref and opencitations}
 \usage{
-reference()
+reference(remove_old = TRUE)
+}
+\arguments{
+\item{remove_old}{whether to remove old files}
 }
 \value{
 no return
 }
 \description{
-Get reference list for publications from crossref
+Get reference list for publications from crossref and opencitations
 }
 \details{
-The reference list is obtained from crossref. The field `reference` in Tiddlywiki is updated
+The reference list is obtained from crossref and opencitations. The field `reference` in Tiddlywiki is updated
 to list all reference in the Tiddlywiki. Two fields `reference-count` and `cited-count` is also updated
 for number of reference and citation for a publication, respectively.
 }
