@@ -58,7 +58,7 @@ works_scopus <- function(is_new = FALSE) {
                 break
             }
             message("Get works from SCOPUS for ", scopus_ids$title[i])
-            works <- rscopus::author_df(au_id = scopus_ids$scopus[i]) |>
+            works <- rscopus::author_df(au_id = scopus_ids$scopus[i], verbose = FALSE) |>
                 dplyr::mutate(is_new = TRUE)
             saveRDS(works, out_file)
             Sys.sleep(1)
