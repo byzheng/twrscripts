@@ -8,8 +8,7 @@ Description: 'TiddlyWiki' is a unique non-linear notebook for capturing, organis
                  and sharing complex information. 'twrsripts' is a R scripts of 'TiddlyWiki' 
                  <https://tiddlywiki.com> to manage tiddlers, e.g. reference.
 License: MIT + file LICENSE
-URL: https://twrscripts.bangyou.me/,
-    https://github.com/byzheng/twrscripts
+URL: https://twrscripts.bangyou.me/, https://github.com/byzheng/twrscripts, https://byzheng.github.io/twrscripts/
 BugReports: https://github.com/byzheng/twrscripts/issues
 Encoding: UTF-8
 LazyData: true
