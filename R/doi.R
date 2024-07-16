@@ -9,10 +9,18 @@ get_dois <- function() {
     if (length(tiddlers) == 0) {
         return(NULL)
     }
+    # Skip entry published in recent 7 days (waiting for citation providers to update)
     dois <- tiddlers  |>
         purrr::map_df(function(x){
-            list(title = x$title,
-                   doi = x$`bibtex-doi`)
+            d <- as.Date(x$`bibtex-date`, "%Y-%m-%d")
+            if (length(d) == 0 || is.na(d) || d < Sys.Date() - 7) {
+                r <- list(title = x$title,
+                          doi = x$`bibtex-doi`)
+            } else {
+                r <- list(title = character(0),
+                          doi = character(0))
+            }
+            r
         })
 
     dois <- dois  |>
