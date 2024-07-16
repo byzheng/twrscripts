@@ -41,13 +41,18 @@ url_id <- function(url, name = NULL) {
     # }
     res <- c()
     for (i in seq(along = url)) {
-        parsed <- httr2::url_parse(url[i])
-        if (is.null(name)) {
-            v <- basename(parsed$path)
-        } else {
-            v <- parsed$query[[name]]
+        url_i <- rtiddlywiki::split_field(url[i])
+        all_v <- c()
+        for (j in seq(along = url_i)) {
+            parsed <- httr2::url_parse(url_i[j])
+            if (is.null(name)) {
+                v <- basename(parsed$path)
+            } else {
+                v <- parsed$query[[name]]
+            }
+            all_v <- c(all_v, v)
         }
-        res[i] <- v
+        res[i] <- paste(all_v, collapse = " ")
     }
     res
 }
