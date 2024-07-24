@@ -178,7 +178,6 @@ info_scholar <- function() {
     new_refs <- list()
     if (nrow(dois) > 0) {
         i <- 1
-        k <- 1
         m <- 0
         for (i in seq(along = dois[[1]])) {
             message("Get information from google scholar for doi ", dois$doi[i], " with ", dois$title[i])
@@ -203,11 +202,8 @@ info_scholar <- function() {
                                             aid = aid)
                 rtiddlywiki::put_tiddler(dois$title[i], fields = list(`scholar-cid` = cid))
             }
-            if (daily_maximum < k) {
-                break
-            }
+
             Sys.sleep(1)
-            k <- k + 1
         }
         if (length(new_refs) > 0) {
             new_refs <- new_refs |>
