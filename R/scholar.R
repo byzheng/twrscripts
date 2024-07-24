@@ -152,7 +152,7 @@ works_scholar <- function(is_new = FALSE) {
 #' @return No return
 #' @export
 info_scholar <- function() {
-    all_dois <- get_dois()
+    all_dois <- get_dois(filter = "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]!has[scholar-cid]]")
 
     out_folder <- file.path(tws_options()$output, "scholar_info")
     if (!dir.exists(out_folder)) {
@@ -173,6 +173,8 @@ info_scholar <- function() {
     daily_maximum <- 20
     # only process missing dois for crossref
     dois <- all_dois[!(all_dois$title %in% unique(all_refs$title)),]
+    dois <- dois |>
+        dplyr::slice(seq_len(daily_maximum))
     new_refs <- list()
     if (nrow(dois) > 0) {
         i <- 1
@@ -186,7 +188,9 @@ info_scholar <- function() {
                 httr2::req_user_agent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.6478.128 Safari/537.36') |>
                 httr2::req_perform()
             resp <- httr2::resp_body_html(info)
+
             item <- xml2::xml_find_all(resp, "//div[contains(@class,'gs_r') and contains(@class, 'gs_or')  and contains(@class, 'gs_scl')]")
+            #xml2::write_html(resp, "a.html")
             if (length(item) > 0) {
                 cid <- xml2::xml_attr(item, "data-cid")
                 did <- xml2::xml_attr(item, "data-did")
@@ -205,14 +209,16 @@ info_scholar <- function() {
             Sys.sleep(1)
             k <- k + 1
         }
-        new_refs <- new_refs |>
-            dplyr::bind_rows() |>
-            dplyr::filter(!is.na(.data$doi))
-        all_refs <- all_refs |>
-            dplyr::bind_rows(new_refs) |>
-            dplyr::distinct()
+        if (length(new_refs) > 0) {
+            new_refs <- new_refs |>
+                dplyr::bind_rows() |>
+                dplyr::filter(!is.na(.data$doi))
+            all_refs <- all_refs |>
+                dplyr::bind_rows(new_refs) |>
+                dplyr::distinct()
 
-        saveRDS(all_refs, out_file)
+            saveRDS(all_refs, out_file)
+        }
     }
 
     return(invisible())
