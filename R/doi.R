@@ -1,10 +1,15 @@
 
 #' Get DOIs from tiddlywiki
 #'
+#' @param filter filter to get dois
 #' @return A data frame with two columns title and doi
 #' @export
-get_dois <- function() {
-    f <- "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]]"
+get_dois <- function(filter = NULL) {
+    if (is.null(filter)) {
+        f <- "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]]"
+    } else {
+        f <- filter
+    }
     tiddlers <- rtiddlywiki::get_tiddlers(f)
     if (length(tiddlers) == 0) {
         return(NULL)

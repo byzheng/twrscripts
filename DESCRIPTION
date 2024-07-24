@@ -30,7 +30,8 @@ Imports:
    scholar,
    rcrossref,
    pinyin,
-   httr2
+   httr2,
+   xml2
 Remotes:
     byzheng/rtiddlywiki,
     muschellij2/rscopus,

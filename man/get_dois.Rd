@@ -4,7 +4,10 @@
 \alias{get_dois}
 \title{Get DOIs from tiddlywiki}
 \usage{
-get_dois()
+get_dois(filter = NULL)
+}
+\arguments{
+\item{filter}{filter to get dois}
 }
 \value{
 A data frame with two columns title and doi
