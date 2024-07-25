@@ -268,6 +268,14 @@ get_author_scopus <- function(remove_old = TRUE) {
 
                 message("Get reference from scopus for doi ", dois$doi[i], " with ", dois$title[i])
                 works <- rscopus::embase_retrieval(id = dois$doi[i], identifier = "doi", verbose = FALSE)
+
+                if (length(works$content) == 0 || httr::status_code(works$get_statement) == 404) {
+                    eid <- ""
+                } else {
+                    eid <- works$content$`abstracts-retrieval-response`$coredata$eid
+                }
+                rtiddlywiki::put_tiddler(dois$title[i], fields = list(`scopus-eid` = eid))
+
                 if (length(works$content) == 0 || httr::status_code(works$get_statement) == 404) {
                     authors_i <- data.frame(given = NA, surname = NA,
                                             authorid = NA,
@@ -377,5 +385,47 @@ get_author_scopus <- function(remove_old = TRUE) {
 
     # Existing entry to cite this one
 
+    return(invisible())
+}
+
+
+
+
+scopus_eid <- function() {
+
+    dois <- get_dois(filter = "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]!has:field[scopus-eid]]")
+
+    out_folder <- file.path(tws_options()$output, "scopus_pub")
+    if (!dir.exists(out_folder)) {
+        dir.create(out_folder, recursive = TRUE)
+    }
+    if (nrow(dois) == 0) {
+        return(invisible())
+    }
+    max_request <- 4000
+    request_num <- 0
+
+    i <- 1
+    for (i in seq(along = dois[[1]])) {
+        tryCatch({
+
+            message("Get EID from scopus for doi ", dois$doi[i], " with ", dois$title[i])
+            out_file <- file.path(out_folder, paste0(dois$title[i], ".Rds"))
+            if (file.exists(out_file)) {
+                works <- readRDS(out_file)
+            } else {
+                works <- rscopus::embase_retrieval(id = dois$doi[i], identifier = "doi", verbose = FALSE)
+                saveRDS(works, out_file)
+            }
+            if (length(works$content) == 0 || httr::status_code(works$get_statement) == 404) {
+                eid <- ""
+            } else {
+                eid <- works$content$`abstracts-retrieval-response`$coredata$eid
+            }
+            rtiddlywiki::put_tiddler(dois$title[i], fields = list(`scopus-eid` = eid))
+        }, error = function(e) {
+            stop(e)
+        })
+    }
     return(invisible())
 }
