@@ -152,70 +152,45 @@ works_scholar <- function(is_new = FALSE) {
 #' @return No return
 #' @export
 info_scholar <- function() {
-    all_dois <- get_dois(filter = "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]!has[scholar-cid]]")
+    all_dois <- get_dois(filter = "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]!has:field[scholar-cid]]")
 
-    out_folder <- file.path(tws_options()$output, "scholar_info")
-    if (!dir.exists(out_folder)) {
-        dir.create(out_folder, recursive = TRUE)
-    }
-    out_file <- file.path(out_folder, "scholar_info.Rds")
-    if (file.exists(out_file)) {
-        all_refs <- readRDS(out_file)
-        # all_refs <- all_refs |>
-        #     dplyr::filter(title != "nelson_quantitative_2014")
-    } else {
-        all_refs <- data.frame(title = character(0), doi = character(0),
-                               cid = character(0),
-                               did = character(0),
-                               aid = character(0))
-    }
 
     daily_maximum <- 20
     # only process missing dois for crossref
-    dois <- all_dois[!(all_dois$title %in% unique(all_refs$title)),]
+    dois <- all_dois
+    if (nrow(dois) == 0) {
+        return(invisible())
+    }
     dois <- dois |>
-        dplyr::slice(seq_len(daily_maximum))
-    new_refs <- list()
-    if (nrow(dois) > 0) {
+        dplyr::slice(seq_len(min(daily_maximum, dplyr::n())))
         i <- 1
-        m <- 0
-        for (i in seq(along = dois[[1]])) {
-            message("Get information from google scholar for doi ", dois$doi[i], " with ", dois$title[i])
-            url <- "https://scholar.google.com/scholar"
-            info <- httr2::request(url) |>
-                httr2::req_url_query(q = dois$doi[i]) |>
-                httr2::req_user_agent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.6478.128 Safari/537.36') |>
-                httr2::req_perform()
-            resp <- httr2::resp_body_html(info)
+    for (i in seq(along = dois[[1]])) {
+        message("Get information from google scholar for doi ", dois$doi[i], " with ", dois$title[i])
+        url <- "https://scholar.google.com/scholar"
+        info <- httr2::request(url) |>
+            httr2::req_url_query(q = dois$doi[i]) |>
+            httr2::req_user_agent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.6478.128 Safari/537.36') |>
+            httr2::req_perform()
+        resp <- httr2::resp_body_html(info)
 
-            item <- xml2::xml_find_all(resp, "//div[contains(@class,'gs_r') and contains(@class, 'gs_or')  and contains(@class, 'gs_scl')]")
-            #xml2::write_html(resp, "a.html")
-            if (length(item) > 0) {
-                cid <- xml2::xml_attr(item, "data-cid")
-                did <- xml2::xml_attr(item, "data-did")
-                aid <- xml2::xml_attr(item, "data-aid")
-                m <- m + 1
-                new_refs[[m]] <- data.frame(title = dois$title[i],
-                                            doi = dois$doi[i],
-                                            cid = cid,
-                                            did = did,
-                                            aid = aid)
-                rtiddlywiki::put_tiddler(dois$title[i], fields = list(`scholar-cid` = cid))
-            }
-
-            Sys.sleep(1)
+        item <- xml2::xml_find_all(resp, "//div[contains(@class,'gs_r') and contains(@class, 'gs_or')  and contains(@class, 'gs_scl')]")
+    #xml2::write_html(resp, "a.html")
+        if (length(item) > 0) {
+            cid <- xml2::xml_attr(item, "data-cid")
+            did <- xml2::xml_attr(item, "data-did")
+            aid <- xml2::xml_attr(item, "data-aid")
+            m <- m + 1
+            new_refs[[m]] <- data.frame(title = dois$title[i],
+                                        doi = dois$doi[i],
+                                        cid = cid,
+                                        did = did,
+                                        aid = aid)
+            rtiddlywiki::put_tiddler(dois$title[i], fields = list(`scholar-cid` = cid))
         }
-        if (length(new_refs) > 0) {
-            new_refs <- new_refs |>
-                dplyr::bind_rows() |>
-                dplyr::filter(!is.na(.data$doi))
-            all_refs <- all_refs |>
-                dplyr::bind_rows(new_refs) |>
-                dplyr::distinct()
 
-            saveRDS(all_refs, out_file)
+        if (nrow(dois) > 1) {
+            Sys.sleep(5 + runif(1) * 5)
         }
     }
-
     return(invisible())
 }
