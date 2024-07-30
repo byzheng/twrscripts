@@ -393,7 +393,7 @@ get_author_scopus <- function(remove_old = TRUE) {
 
 scopus_eid <- function() {
 
-    dois <- get_dois(filter = "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]!has:field[scopus-eid]]")
+    dois <- get_dois(filter = "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]!has[scopus-eid]]")
 
     out_folder <- file.path(tws_options()$output, "scopus_pub")
     if (!dir.exists(out_folder)) {

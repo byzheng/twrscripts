@@ -163,7 +163,7 @@ info_scholar <- function() {
     }
     dois <- dois |>
         dplyr::slice(seq_len(min(daily_maximum, dplyr::n())))
-        i <- 1
+    i <- 1
     for (i in seq(along = dois[[1]])) {
         message("Get information from google scholar for doi ", dois$doi[i], " with ", dois$title[i])
         url <- "https://scholar.google.com/scholar"
@@ -173,20 +173,31 @@ info_scholar <- function() {
             httr2::req_perform()
         resp <- httr2::resp_body_html(info)
 
-        item <- xml2::xml_find_all(resp, "//div[contains(@class,'gs_r') and contains(@class, 'gs_or')  and contains(@class, 'gs_scl')]")
-    #xml2::write_html(resp, "a.html")
+        cid <- ""
+        did <- ""
+        aid <- ""
+        cites <- ""
+        item <- xml2::xml_find_first(resp, "//div[contains(@class,'gs_r') and contains(@class, 'gs_or')  and contains(@class, 'gs_scl')]")
+        #xml2::write_html(resp, "a.html")
         if (length(item) > 0) {
             cid <- xml2::xml_attr(item, "data-cid")
             did <- xml2::xml_attr(item, "data-did")
             aid <- xml2::xml_attr(item, "data-aid")
-            m <- m + 1
-            new_refs[[m]] <- data.frame(title = dois$title[i],
-                                        doi = dois$doi[i],
-                                        cid = cid,
-                                        did = did,
-                                        aid = aid)
-            rtiddlywiki::put_tiddler(dois$title[i], fields = list(`scholar-cid` = cid))
+            links <- xml2::xml_find_all(resp, "//div[contains(@class,'gs_fl')]/a")
+            j <- 1
+            for (j in seq(along = links)) {
+                href <- xml2::xml_attr(links[j], "href")
+                if (length(grep("cites", href)) > 0) {
+                    href <- httr2::url_parse(href)
+                    cites <- href$query$cites
+                    break
+                }
+            }
         }
+        message(cid)
+        message(cites)
+        rtiddlywiki::put_tiddler(dois$title[i], fields = list(`scholar-cid` = cid,
+                                                              `scholar-cites` = cites))
 
         if (nrow(dois) > 1) {
             Sys.sleep(5 + runif(1) * 5)
