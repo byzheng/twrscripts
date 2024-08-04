@@ -49,7 +49,8 @@ works_authoring <- function(works, is_new = FALSE) {
         # Check whether it is required to update
         missing <- !(authors %in% tiddler$tags)
         if (sum(missing) > 0) {
-            message("Updating: ", bibtex_tiddlers$key[i], " for new authors \"", authors[missing], "\"")
+            message("Updating: ", bibtex_tiddlers$key[i], " for new authors \"",
+                    paste(authors[missing], collapse = " "), "\"")
             new_tags <- unique(c(authors, tiddler$tags))
             rtiddlywiki::put_tiddler(bibtex_tiddlers$key[i], tags = new_tags)
         }
