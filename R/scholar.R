@@ -200,7 +200,7 @@ info_scholar <- function() {
                                                               `scholar-cites` = cites))
 
         if (nrow(dois) > 1) {
-            Sys.sleep(5 + runif(1) * 5)
+            Sys.sleep(5 + stats::runif(1) * 5)
         }
     }
     return(invisible())
