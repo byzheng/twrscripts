@@ -152,7 +152,7 @@ works_scholar <- function(is_new = FALSE) {
 #' @return No return
 #' @export
 info_scholar <- function() {
-    all_dois <- get_dois(filter = "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]!has:field[scholar-cid]]")
+    all_dois <- get_dois(filter = "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Preprint]!tag[Accepted Article]!has:field[scholar-cid]]")
 
 
     daily_maximum <- 20

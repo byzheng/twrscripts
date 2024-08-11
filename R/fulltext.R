@@ -5,7 +5,7 @@ fulltext_scopus <- function() {
     if (!dir.exists(out_folder)) {
         dir.create(out_folder, recursive = TRUE)
     }
-    all_dois <- get_dois(filter = "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]] :filter[get[bibtex-journaltitle]pubname[]tag[Elsevier]]") |>
+    all_dois <- get_dois(filter = "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Preprint]!tag[Accepted Article]] :filter[get[bibtex-journaltitle]pubname[]tag[Elsevier]]") |>
         dplyr::mutate(file = file.path(out_folder, paste0(.data$title, ".Rds"))) |>
         dplyr::filter(!file.exists(file))
 
