@@ -26,8 +26,8 @@ author_scopus <- function(threshold = 0.9, update = FALSE) {
         dplyr::mutate(given = gsub("^(.*)( [a-zA-Z]{1}\\.$)", "\\1", .data$given))
     # colleagues without empty scopus field
     colleagues <- rtiddlywiki::get_tiddlers("[tag[Colleague]!has[scopus]!has[draft.of]] :filter[all[tiddlers]tag[bibtex-entry]tag<currentTiddler>]")
-    # message("Number of colleagues without SCOPUS author id but with publications: ")
-    # message(length(colleagues))
+    message("Number of colleagues without SCOPUS author id but with publications: ")
+    message(length(colleagues))
 
     find_aid <- list()
     i <- 1
