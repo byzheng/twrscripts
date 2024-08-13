@@ -6,7 +6,7 @@
 #' @export
 get_dois <- function(filter = NULL) {
     if (is.null(filter)) {
-        f <- "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]]"
+        f <- "[tag[bibtex-entry]!hasp[draft.of]!is[system]has[bibtex-doi]!tag[Accepted Article]!tag[Preprint]]"
     } else {
         f <- filter
     }
