@@ -117,6 +117,24 @@ author_scopus <- function(threshold = 0.9, update = FALSE) {
 
 }
 
+.scopus_ids <- function() {
+    f <- "[tag[Colleague]has[scopus]!has[draft.of]]"
+
+    scopus_ids <- rtiddlywiki::get_tiddlers(f)
+    if (length(scopus_ids) == 0) {
+        return(NULL)
+    }
+
+    scopus_ids <- scopus_ids |>
+        purrr::map_df(function(x){
+            ids <- strsplit(x$scopus, " ")[[1]]
+            tibble::tibble(title = x$title,
+                           scopus = ids)
+        }) |>
+        dplyr::mutate(scopus = url_id(.data$scopus, "authorId"))
+    scopus_ids
+}
+
 #' Get works from Scopus using Scopus API.
 #'
 #' @details
@@ -135,21 +153,8 @@ author_scopus <- function(threshold = 0.9, update = FALSE) {
 #' @return A data frame for all works obtained from Scopus
 #' @export
 works_scopus <- function(is_new = FALSE) {
-    f <- "[tag[Colleague]has[scopus]!has[draft.of]]"
 
-    scopus_ids <- rtiddlywiki::get_tiddlers(f)
-    if (length(scopus_ids) == 0) {
-        return(NULL)
-    }
-
-    scopus_ids <- scopus_ids |>
-        purrr::map_df(function(x){
-            ids <- strsplit(x$scopus, " ")[[1]]
-            tibble::tibble(title = x$title,
-                   scopus = ids)
-        }) |>
-        dplyr::mutate(scopus = url_id(.data$scopus, "authorId"))
-
+    scopus_ids <- .scopus_ids()
     out_folder <- file.path(tws_options()$output, "scopus")
     if (!dir.exists(out_folder)) {
         dir.create(out_folder, recursive = TRUE)
@@ -364,6 +369,18 @@ get_author_scopus <- function(remove_old = TRUE) {
 
         new_authors <- new_authors |>
             dplyr::bind_rows()
+
+        # Update works for new authors
+        scopus_ids <- .scopus_ids()
+        new_works <- new_authors |>
+            dplyr::left_join(dois, by = "title") |>
+            dplyr::select(scopus = 'authorid', pub = 'title', 'doi') |>
+            dplyr::left_join(scopus_ids, by = 'scopus') |>
+            dplyr::filter(!is.na(.data$title)) |>
+            dplyr::select('title', 'doi')
+        works_authoring(new_works, TRUE)
+        # Save to drive
+
         all_authors <- all_authors |>
             dplyr::bind_rows(new_authors) |>
             dplyr::distinct()
