@@ -189,7 +189,7 @@ works_scopus <- function(is_new = FALSE) {
             saveRDS(works, out_file)
             Sys.sleep(1)
         }
-        if (!is.null(works$doi)) {
+        if (!is.null(works[['prism:doi']])) {
             works <- works |>
                 dplyr::select(doi = "prism:doi", is_new) |>
                 dplyr::mutate(title = scopus_ids$title[i])
