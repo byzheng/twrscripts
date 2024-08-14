@@ -28,6 +28,9 @@ author_scopus <- function(threshold = 0.9, update = FALSE) {
     colleagues <- rtiddlywiki::get_tiddlers("[tag[Colleague]!has[scopus]!has[draft.of]] :filter[all[tiddlers]tag[bibtex-entry]tag<currentTiddler>]")
     message("Number of colleagues without SCOPUS author id but with publications: ")
     message(length(colleagues))
+    cols <- colleagues |>
+        purrr::map_chr("title")
+    message(paste(cols, collapse = ", "))
 
     find_aid <- list()
     i <- 1
@@ -141,8 +144,9 @@ works_scopus <- function(is_new = FALSE) {
 
     scopus_ids <- scopus_ids |>
         purrr::map_df(function(x){
+            ids <- strsplit(x$scopus, " ")[[1]]
             tibble::tibble(title = x$title,
-                   scopus = x$scopus)
+                   scopus = ids)
         }) |>
         dplyr::mutate(scopus = url_id(.data$scopus, "authorId"))
 
@@ -161,38 +165,36 @@ works_scopus <- function(is_new = FALSE) {
     all_works <- list()
     i <- 1
     for (i in seq_len(nrow(scopus_ids))) {
-        ids <- strsplit(scopus_ids$scopus[i], " ")[[1]]
-        j <- 1
-        for (j in seq(along = ids)) {
-            out_file <- file.path(out_folder, paste0(ids[j], ".Rds"))
-            if (file.exists(out_file)) {
-                works <- readRDS(out_file) |>
-                    dplyr::mutate(is_new = FALSE)
-            } else {
-                request_num_now <- request_num_now + 1
-                if (request_num_now > request_num) {
-                    message("Request number is more than the limit ", request_num)
-                    message("Call this function again for more request")
-                    break
-                }
-                message("Get works from SCOPUS for ", scopus_ids$title[i],
-                        " with id ", ids[j])
-                works <- rscopus::author_df(au_id = ids[j], verbose = FALSE) |>
-                    dplyr::mutate(is_new = TRUE)
-                saveRDS(works, out_file)
-                Sys.sleep(1)
+        ids <- scopus_ids$scopus[i]
+        out_file <- file.path(out_folder, paste0(ids, ".Rds"))
+        if (file.exists(out_file)) {
+            works <- readRDS(out_file) |>
+                dplyr::mutate(is_new = FALSE)
+        } else {
+            request_num_now <- request_num_now + 1
+            if (request_num_now > request_num) {
+                message("Request number is more than the limit ", request_num)
+                message("Call this function again for more request")
+                break
             }
-            if (!is.null(works$doi)) {
-                works <- works |>
-                    dplyr::select(doi = "prism:doi", is_new) |>
-                    dplyr::mutate(title = scopus_ids$title[i])
-            } else {
-                works <- tibble::tibble(doi = character(),
-                                        title = character())
-            }
-            all_works[[i]] <- works
+            message("Get works from SCOPUS for ", scopus_ids$title[i],
+                    " with id ", ids)
+            works <- rscopus::author_df(au_id = ids, verbose = FALSE) |>
+                dplyr::mutate(is_new = TRUE)
+            saveRDS(works, out_file)
+            Sys.sleep(1)
         }
+        if (!is.null(works$doi)) {
+            works <- works |>
+                dplyr::select(doi = "prism:doi", is_new) |>
+                dplyr::mutate(title = scopus_ids$title[i])
+        } else {
+            works <- tibble::tibble(doi = character(),
+                                    title = character())
+        }
+        all_works[[i]] <- works
     }
+
     all_works <- dplyr::bind_rows(all_works) |> tibble::as_tibble()
 
     works_authoring(all_works, is_new)
