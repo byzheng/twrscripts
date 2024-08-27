@@ -23,8 +23,8 @@ remove_outfiles <- function(files, expired_days = NULL) {
     files_info <- files_info |>
         tibble::as_tibble() |>
         dplyr::mutate(file = files) |>
-        dplyr::arrange(.data$ctime) |>
-        dplyr::filter((as.numeric(Sys.time()) - as.numeric(.data$ctime)) > expired_days * 24 * 3600)
+        dplyr::arrange(.data$mtime) |>
+        dplyr::filter((as.numeric(Sys.time()) - as.numeric(.data$mtime)) > expired_days * 24 * 3600)
     if (nrow(files_info) == 0) {
         return(invisible())
     }
