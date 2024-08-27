@@ -162,7 +162,7 @@ works_scopus <- function(is_new = FALSE) {
     if (!is_new) {
         # Check out files
         files <- file.path(out_folder, sprintf("%s.Rds", scopus_ids$scopus))
-        remove_outfiles(files = files, expired_days = 7)
+        remove_outfiles(files = files, expired_days = 7, file_remove_max = 20)
     }
 
     request_num <- tws_options()$author_max
