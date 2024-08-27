@@ -28,6 +28,7 @@ rtiddlywiki::tw_options(host = TWS_OPTIONS()$host)
 #'  author_max: Maximum number of authors/colleagues to download
 #'  file_expired: days to intermediate files expired
 #'  file_remove_max: maximum number of intermediate file to remove
+#'  latest_literature: tiddler name for latest literature
 #'
 #' @return the default and modified options.
 #' @export
