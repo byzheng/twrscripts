@@ -214,13 +214,14 @@ works_scopus <- function(is_new = FALSE) {
 
 
 latest_works_scopus <- function(all_works) {
+
     message("Get latest works from SCOPUS")
     # Get latest works in 60 days
     latest_works <- all_works |>
         dplyr::mutate(date = as.Date(.data$`prism:coverDate`)) |>
         dplyr::filter(.data$date > Sys.Date() - 60) |>
-        dplyr::select("colleague", "eid", "dc:title", "dc:creator",
-                      "prism:doi", "prism:publicationName", "au_id", "date")
+        dplyr::select("colleague", "eid", title = "dc:title", "dc:creator",
+                      doi = "prism:doi", publicationname = "prism:publicationName", "au_id", "date")
 
     latest_works_eid <- latest_works |>
         dplyr::distinct(.data$eid, .data$date)
@@ -237,24 +238,48 @@ latest_works_scopus <- function(all_works) {
     missing_eid <- dplyr::bind_rows(missing_eid)
 
 
-    # Generate texts for tiddler
-    texts <- missing_eid |>
+    tiddler_name <- tws_options()$latest_literature
+
+    # Ignore eids
+    tiddler_json <- rtiddlywiki::get_tiddler(tiddler_name)
+    eid_ignore <- c()
+    if (length(tiddler_json) > 0) {
+        eid_ignore <- rtiddlywiki::split_field(tiddler_json$fields$`eid-ignore`)
+    }
+
+    missing_json <- missing_eid |>
+        #dplyr::filter(!(eid %in% eid_ignore)) |>
         dplyr::left_join(latest_works, by = c("eid", "date")) |>
         dplyr::distinct() |>
-        dplyr::group_by(.data$date, .data$eid) |>
-        dplyr::summarise(text = paste0(
-            "|", format(.data$date[1], "%d/%m/%Y"), # for date
-            "|", paste(paste0("@[[", .data$colleague, "]]"), collapse = ", "), # for colleague
-            "|", paste0("[[", .data$`prism:publicationName`[1], "|https://www.scopus.com/record/display.uri?eid=", .data$eid[1], "&origin=resultslist]]"), # for journal name and link
-            "|", .data$`dc:title`[1], # for title
-            "|"), .groups = "drop"
-        ) |>
+        dplyr::group_by(.data$date, .data$eid, .data$title, .data$publicationname) |>
+        dplyr::summarise(colleagues = paste(paste0("[[", .data$colleague, "]]"), collapse = " "),
+                         .groups = "drop") |>
         dplyr::arrange(dplyr::desc(.data$date)) |>
-        dplyr::pull(.data$text) |>
-        paste(collapse = "\n")
-    # Update the tiddler
-    tiddler_name <- tws_options()$latest_literature
-    rtiddlywiki::put_tiddler(tiddler_name, text = texts, fields = list(count = nrow(missing_eid)))
+        dplyr::mutate(date = format(date, "%Y%m%d"),
+                      link = paste0("https://www.scopus.com/record/display.uri?eid=", .data$eid, "&origin=resultslist")) |>
+        jsonlite::toJSON(pretty = TRUE)
+
+    rtiddlywiki::put_tiddler(tiddler_name, text = missing_json,
+                             type = "application/json")
+
+    # # Generate texts for tiddler
+    # texts <- missing_eid |>
+    #     dplyr::left_join(latest_works, by = c("eid", "date")) |>
+    #     dplyr::distinct() |>
+    #     dplyr::group_by(.data$date, .data$eid) |>
+    #     dplyr::summarise(text = paste0(
+    #         "|", format(.data$date[1], "%d/%m/%Y"), # for date
+    #         "|", paste(paste0("@[[", .data$colleague, "]]"), collapse = ", "), # for colleague
+    #         "|", paste0("[[", .data$`prism:publicationName`[1], "|https://www.scopus.com/record/display.uri?eid=", .data$eid[1], "&origin=resultslist]]"), # for journal name and link
+    #         "|", .data$`dc:title`[1], # for title
+    #         "|"), .groups = "drop"
+    #     ) |>
+    #     dplyr::arrange(dplyr::desc(.data$date)) |>
+    #     dplyr::pull(.data$text) |>
+    #     paste(collapse = "\n")
+    # # Update the tiddler
+    # tiddler_name <- tws_options()$latest_literature
+    # rtiddlywiki::put_tiddler(tiddler_name, text = texts, fields = list(count = nrow(missing_eid)))
 }
 
 get_author_scopus <- function(remove_old = TRUE) {
