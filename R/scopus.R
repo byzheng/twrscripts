@@ -162,7 +162,7 @@ works_scopus <- function(is_new = FALSE) {
     if (!is_new) {
         # Check out files
         files <- file.path(out_folder, sprintf("%s.Rds", scopus_ids$scopus))
-        remove_outfiles(files = files, expired_days = 7, file_remove_max = 20)
+        remove_outfiles(files = files, expired_days = 7, file_remove_max = 30)
     }
 
     request_num <- tws_options()$author_max
@@ -245,6 +245,7 @@ latest_works_scopus <- function(all_works) {
     eid_ignore <- c()
     if (length(tiddler_json) > 0) {
         eid_ignore <- rtiddlywiki::split_field(tiddler_json$fields$`eid-ignore`)
+        eid_ignore <- eid_ignore[eid_ignore %in% missing_eid$eid]
     }
 
     missing_json <- missing_eid |>
@@ -260,6 +261,7 @@ latest_works_scopus <- function(all_works) {
         jsonlite::toJSON(pretty = TRUE)
 
     rtiddlywiki::put_tiddler(tiddler_name, text = missing_json,
+                             fields = list(`eid-ignore` = eid_ignore),
                              type = "application/json")
 
     # # Generate texts for tiddler
