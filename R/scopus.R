@@ -214,6 +214,7 @@ works_scopus <- function(is_new = FALSE) {
 
 
 latest_works_scopus <- function(all_works) {
+    message("Get latest works from SCOPUS")
     # Get latest works in 60 days
     latest_works <- all_works |>
         dplyr::mutate(date = as.Date(.data$`prism:coverDate`)) |>
