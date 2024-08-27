@@ -4,10 +4,12 @@
 \alias{remove_outfiles}
 \title{Remove old intermediate files by dates}
 \usage{
-remove_outfiles(files)
+remove_outfiles(files, expired_days = NULL)
 }
 \arguments{
 \item{files}{a list of files}
+
+\item{expired_days}{days to expire}
 }
 \value{
 no return

@@ -7,10 +7,16 @@
 #'
 #'
 #' @param files a list of files
+#' @param expired_days days to expire
 #'
 #' @return no return
-remove_outfiles <- function(files) {
-    expired_days <- tws_options()$file_expired
+remove_outfiles <- function(files, expired_days = NULL) {
+    if (is.null(expired_days)) {
+        expired_days <- tws_options()$file_expired
+    } else {
+        stopifnot(is.numeric(expired_days))
+        stopifnot(length(expired_days) == 1)
+    }
     max_files <- tws_options()$file_remove_max
     files <- files[file.exists(unique(files))]
     files_info <- file.info(files)

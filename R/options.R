@@ -11,7 +11,8 @@ TWS_OPTIONS <- settings::options_manager(
     output = "output",
     author_max = 10,
     file_expired = 90,
-    file_remove_max = 3
+    file_remove_max = 3,
+    latest_literature = "Latest Literature from Scopus"
 )
 
 rtiddlywiki::tw_options(host = TWS_OPTIONS()$host)

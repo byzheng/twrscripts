@@ -162,12 +162,13 @@ works_scopus <- function(is_new = FALSE) {
     if (!is_new) {
         # Check out files
         files <- file.path(out_folder, sprintf("%s.Rds", scopus_ids$scopus))
-        remove_outfiles(files = files)
+        remove_outfiles(files = files, expired_days = 7)
     }
 
     request_num <- tws_options()$author_max
     request_num_now <- 0
     all_works <- list()
+    all_works2 <- list()
     i <- 1
     for (i in seq_len(nrow(scopus_ids))) {
         ids <- scopus_ids$scopus[i]
@@ -190,9 +191,12 @@ works_scopus <- function(is_new = FALSE) {
             Sys.sleep(1)
         }
         if (!is.null(works[['prism:doi']])) {
+            all_works2[[i]] <- works |>
+                dplyr::mutate(colleague = scopus_ids$title[i])
             works <- works |>
                 dplyr::select(doi = "prism:doi", is_new) |>
                 dplyr::mutate(title = scopus_ids$title[i])
+
         } else {
             works <- tibble::tibble(doi = character(),
                                     title = character())
@@ -201,14 +205,56 @@ works_scopus <- function(is_new = FALSE) {
     }
 
     all_works <- dplyr::bind_rows(all_works) |> tibble::as_tibble()
-
+    all_works2 <- dplyr::bind_rows(all_works2) |> tibble::as_tibble()
     works_authoring(all_works, is_new)
 
+    latest_works_scopus(all_works2)
     return(invisible())
 }
 
 
+latest_works_scopus <- function(all_works) {
+    # Get latest works in 60 days
+    latest_works <- all_works |>
+        dplyr::mutate(date = as.Date(.data$`prism:coverDate`)) |>
+        dplyr::filter(.data$date > Sys.Date() - 60) |>
+        dplyr::select("colleague", "eid", "dc:title", "dc:creator",
+                      "prism:doi", "prism:publicationName", "au_id", "date")
 
+    latest_works_eid <- latest_works |>
+        dplyr::distinct(.data$eid, .data$date)
+    # Find missing litratures which are not in the Tiddlywiki
+    missing_eid <- list()
+    i <- 1
+    for (i in seq_len(nrow(latest_works_eid))) {
+        f <- paste0("[tag[bibtex-entry]field:scopus-eid[", latest_works_eid$eid[i], "]]")
+        tiddler <- rtiddlywiki::get_tiddlers(f)
+        if (length(tiddler) == 0) {
+            missing_eid[[length(missing_eid) + 1]] <- latest_works_eid[i,]
+        }
+    }
+    missing_eid <- dplyr::bind_rows(missing_eid)
+
+
+    # Generate texts for tiddler
+    texts <- missing_eid |>
+        dplyr::left_join(latest_works, by = c("eid", "date")) |>
+        dplyr::distinct() |>
+        dplyr::group_by(.data$date, .data$eid) |>
+        dplyr::summarise(text = paste0(
+            "|", format(.data$date[1], "%d/%m/%Y"), # for date
+            "|", paste(paste0("@[[", .data$colleague, "]]"), collapse = ", "), # for colleague
+            "|", paste0("[[", .data$`prism:publicationName`[1], "|https://www.scopus.com/record/display.uri?eid=", .data$eid[1], "&origin=resultslist]]"), # for journal name and link
+            "|", .data$`dc:title`[1], # for title
+            "|"), .groups = "drop"
+        ) |>
+        dplyr::arrange(dplyr::desc(.data$date)) |>
+        dplyr::pull(.data$text) |>
+        paste(collapse = "\n")
+    # Update the tiddler
+    tiddler_name <- tws_options()$latest_literature
+    rtiddlywiki::put_tiddler(tiddler_name, text = texts, fields = list(count = nrow(missing_eid)))
+}
 
 get_author_scopus <- function(remove_old = TRUE) {
     # Get all tiddlers
