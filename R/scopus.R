@@ -224,6 +224,7 @@ latest_works_scopus <- function(all_works) {
                       doi = "prism:doi", publicationname = "prism:publicationName", "au_id", "date")
 
     latest_works_eid <- latest_works |>
+        dplyr::mutate(eid = tolower(.data$eid)) |>
         dplyr::distinct(.data$eid, .data$date)
     # Find missing litratures which are not in the Tiddlywiki
     missing_eid <- list()
@@ -248,15 +249,21 @@ latest_works_scopus <- function(all_works) {
         eid_ignore <- eid_ignore[eid_ignore %in% missing_eid$eid]
     }
 
+
+
+
     missing_json <- missing_eid |>
         #dplyr::filter(!(eid %in% eid_ignore)) |>
         dplyr::left_join(latest_works, by = c("eid", "date")) |>
         dplyr::distinct() |>
-        dplyr::group_by(.data$date, .data$eid, .data$title, .data$publicationname) |>
+        dplyr::group_by(.data$eid) |>
         dplyr::summarise(colleagues = paste(paste0("[[", .data$colleague, "]]"), collapse = " "),
+                         date = .data$date[1],
+                         title = .data$title[1],
+                         publicationname = .data$publicationname[1],
                          .groups = "drop") |>
         dplyr::arrange(dplyr::desc(.data$date)) |>
-        dplyr::mutate(date = format(date, "%Y%m%d"),
+        dplyr::mutate(date = format(.data$date, "%Y%m%d"),
                       link = paste0("https://www.scopus.com/record/display.uri?eid=", .data$eid, "&origin=resultslist")) |>
         jsonlite::toJSON(pretty = TRUE)
 
