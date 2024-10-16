@@ -158,7 +158,7 @@ info_scholar <- function() {
     daily_maximum <- 20
     # only process missing dois for crossref
     dois <- all_dois
-    if (nrow(dois) == 0) {
+    if (is.null(all_dois) || nrow(dois) == 0) {
         return(invisible())
     }
     dois <- dois |>
