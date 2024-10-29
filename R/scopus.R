@@ -1,4 +1,35 @@
+# Get author ids from scopus by latest publications according to bibtex-date (365 days in default)
+.author_ids_by_latest_pubs <- function(days = 365) {
+    stopifnot(length(days) == 1)
+    stopifnot(is.numeric(days))
+    # Get recently publications
+    recent_dates <- format(Sys.Date() - days, "%Y%m%d")
+    filter <- sprintf("[tag[bibtex-entry]has[scopus-eid]] :filter[get[bibtex-date]search-replace:g[-],[]compare:date:gt[%s]]", recent_dates)
+    latest_pubs <- rtiddlywiki::get_tiddlers(filter)
+    latest_pubs <- latest_pubs |>
+        purrr::map_df(function(x){
+            tibble::tibble(title = x$title)
+        })
 
+    # Read the download authorids
+    out_folder <- file.path(tws_options()$output, "reference")
+    if (!dir.exists(out_folder)) {
+        stop("Cannot find ", out_folder)
+    }
+
+    out_file_author <- file.path(out_folder, "scopus_authors.Rds")
+    if (!file.exists(out_file_author)) {
+        stop("Cannot find ", out_file_author)
+    }
+    all_authors <- readRDS(out_file_author) |> tibble::tibble()
+    latest_pubs |>
+        dplyr::left_join(all_authors, by = "title") |>
+        dplyr::filter(!is.na(.data$authorid)) |>
+        dplyr::mutate(title = paste(.data$given, .data$surname),
+                      scopus = .data$authorid) |>
+        dplyr::select("title", "authorid") |>
+        dplyr::rename(scopus = .data$authorid)
+}
 
 #' Find author ids from SCOPUS
 #'
@@ -154,7 +185,20 @@ author_scopus <- function(threshold = 0.9, update = FALSE) {
 #' @export
 works_scopus <- function(is_new = FALSE) {
 
-    scopus_ids <- .scopus_ids()
+    # Get all scopus ids in the tw
+    scopus_ids <- .scopus_ids() |>
+        dplyr::mutate(source = "tw")
+
+    # the authors by latest pubs
+    # Only process it at daily scheduled task to save run time of normal tasks
+    if (!is_new) {
+        latest_sids <- .author_ids_by_latest_pubs()
+        latest_sids <- latest_sids |>
+            dplyr::filter(!(.data$scopus %in% scopus_ids$scopus)) |>
+            dplyr::mutate(source = "latest")
+        scopus_ids <- scopus_ids |>
+            dplyr::bind_rows(latest_sids)
+    }
     out_folder <- file.path(tws_options()$output, "scopus")
     if (!dir.exists(out_folder)) {
         dir.create(out_folder, recursive = TRUE)
@@ -162,7 +206,7 @@ works_scopus <- function(is_new = FALSE) {
     if (!is_new) {
         # Check out files
         files <- file.path(out_folder, sprintf("%s.Rds", scopus_ids$scopus))
-        remove_outfiles(files = files, expired_days = 7, file_remove_max = 30)
+        remove_outfiles(files = files, expired_days = 7, file_remove_max = 50)
     }
 
     request_num <- tws_options()$author_max
@@ -193,6 +237,12 @@ works_scopus <- function(is_new = FALSE) {
         if (!is.null(works[['prism:doi']])) {
             all_works2[[i]] <- works |>
                 dplyr::mutate(colleague = scopus_ids$title[i])
+
+        }
+        # Only authoring for records from tw
+        if (scopus_ids$source[i] == "tw" && !is.null(works[['prism:doi']])) {
+            all_works2[[i]] <- works |>
+                dplyr::mutate(colleague = scopus_ids$title[i])
             works <- works |>
                 dplyr::select(doi = "prism:doi", is_new) |>
                 dplyr::mutate(title = scopus_ids$title[i])
@@ -202,10 +252,12 @@ works_scopus <- function(is_new = FALSE) {
                                     title = character())
         }
         all_works[[i]] <- works
+
     }
 
     all_works <- dplyr::bind_rows(all_works) |> tibble::as_tibble()
     all_works2 <- dplyr::bind_rows(all_works2) |> tibble::as_tibble()
+
     works_authoring(all_works, is_new)
 
     latest_works_scopus(all_works2)
@@ -216,16 +268,30 @@ works_scopus <- function(is_new = FALSE) {
 latest_works_scopus <- function(all_works) {
 
     message("Get latest works from SCOPUS")
+
+    # Get ignore eids
+    tiddler_name <- tws_options()$latest_literature
+    # Ignore eids
+    tiddler_json <- rtiddlywiki::get_tiddler(tiddler_name)
+    eid_ignore <- c()
+    if (length(tiddler_json) > 0) {
+        eid_ignore <- rtiddlywiki::split_field(tiddler_json$fields$`eid-ignore`)
+    }
+
     # Get latest works in 60 days
     latest_works <- all_works |>
         dplyr::mutate(date = as.Date(.data$`prism:coverDate`)) |>
         dplyr::filter(.data$date > Sys.Date() - 60) |>
         dplyr::select("colleague", "eid", title = "dc:title", "dc:creator",
                       doi = "prism:doi", publicationname = "prism:publicationName", "au_id", "date")
+    # Remove all ignore eids which are not in the latest works
+    eid_ignore <- eid_ignore[eid_ignore %in% latest_works$eid]
 
     latest_works_eid <- latest_works |>
         dplyr::mutate(eid = tolower(.data$eid)) |>
-        dplyr::distinct(.data$eid, .data$date)
+        dplyr::distinct(.data$eid, .data$date) |>
+        dplyr::filter(!(.data$eid %in% eid_ignore))
+
     # Find missing litratures which are not in the Tiddlywiki
     missing_eid <- list()
     i <- 1
@@ -239,17 +305,10 @@ latest_works_scopus <- function(all_works) {
     missing_eid <- dplyr::bind_rows(missing_eid)
 
 
-    tiddler_name <- tws_options()$latest_literature
-
-    # Ignore eids
-    tiddler_json <- rtiddlywiki::get_tiddler(tiddler_name)
-    eid_ignore <- c()
-    if (length(tiddler_json) > 0) {
-        eid_ignore <- rtiddlywiki::split_field(tiddler_json$fields$`eid-ignore`)
-        eid_ignore <- eid_ignore[eid_ignore %in% missing_eid$eid]
-    }
-
-
+    # if (length(tiddler_json) > 0) {
+    #     eid_ignore <- rtiddlywiki::split_field(tiddler_json$fields$`eid-ignore`)
+    #     eid_ignore <- eid_ignore[eid_ignore %in% missing_eid$eid]
+    # }
 
 
     missing_json <- missing_eid |>
@@ -266,7 +325,9 @@ latest_works_scopus <- function(all_works) {
         dplyr::mutate(date = format(.data$date, "%Y%m%d"),
                       link = paste0("https://www.scopus.com/record/display.uri?eid=", .data$eid, "&origin=resultslist")) |>
         jsonlite::toJSON(pretty = TRUE)
-
+    if (length(eid_ignore) == 0) {
+        eid_ignore <- ""
+    }
     rtiddlywiki::put_tiddler(tiddler_name, text = missing_json,
                              fields = list(`eid-ignore` = eid_ignore),
                              type = "application/json")
