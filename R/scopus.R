@@ -28,7 +28,7 @@
         dplyr::mutate(title = paste(.data$given, .data$surname),
                       scopus = .data$authorid) |>
         dplyr::select("title", "authorid") |>
-        dplyr::rename(scopus = .data$authorid)
+        dplyr::rename(scopus = 'authorid')
 }
 
 #' Find author ids from SCOPUS
@@ -259,8 +259,10 @@ works_scopus <- function(is_new = FALSE) {
     all_works2 <- dplyr::bind_rows(all_works2) |> tibble::as_tibble()
 
     works_authoring(all_works, is_new)
-
-    latest_works_scopus(all_works2)
+    # Only update latest literature if is_new = false as we check all records
+    if (!is_new) {
+        latest_works_scopus(all_works2)
+    }
     return(invisible())
 }
 
@@ -303,7 +305,9 @@ latest_works_scopus <- function(all_works) {
         }
     }
     missing_eid <- dplyr::bind_rows(missing_eid)
-
+    if (nrow(missing_eid) == 0) {
+        return(invisible())
+    }
 
     # if (length(tiddler_json) > 0) {
     #     eid_ignore <- rtiddlywiki::split_field(tiddler_json$fields$`eid-ignore`)
@@ -332,24 +336,7 @@ latest_works_scopus <- function(all_works) {
                              fields = list(`eid-ignore` = eid_ignore),
                              type = "application/json")
 
-    # # Generate texts for tiddler
-    # texts <- missing_eid |>
-    #     dplyr::left_join(latest_works, by = c("eid", "date")) |>
-    #     dplyr::distinct() |>
-    #     dplyr::group_by(.data$date, .data$eid) |>
-    #     dplyr::summarise(text = paste0(
-    #         "|", format(.data$date[1], "%d/%m/%Y"), # for date
-    #         "|", paste(paste0("@[[", .data$colleague, "]]"), collapse = ", "), # for colleague
-    #         "|", paste0("[[", .data$`prism:publicationName`[1], "|https://www.scopus.com/record/display.uri?eid=", .data$eid[1], "&origin=resultslist]]"), # for journal name and link
-    #         "|", .data$`dc:title`[1], # for title
-    #         "|"), .groups = "drop"
-    #     ) |>
-    #     dplyr::arrange(dplyr::desc(.data$date)) |>
-    #     dplyr::pull(.data$text) |>
-    #     paste(collapse = "\n")
-    # # Update the tiddler
-    # tiddler_name <- tws_options()$latest_literature
-    # rtiddlywiki::put_tiddler(tiddler_name, text = texts, fields = list(count = nrow(missing_eid)))
+
 }
 
 get_author_scopus <- function(remove_old = TRUE) {
